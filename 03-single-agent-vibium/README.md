@@ -1,31 +1,111 @@
 # Module 03 — Single-Agent Test Runner: Vibium
 
-> Status: 🚧 coming next
+## The core lesson
 
-## What's different from Module 02
+Compare `tools.py` in this module with `tools.py` in Module 02. **Everything else is identical** — `TOOL_DEFINITIONS`, `agent.py`, `run.py`. The agent loop doesn't know or care which browser driver is underneath. Only the tool implementations change.
 
-Vibium exposes its browser API directly as MCP tools — meaning the agent can call browser actions **without you writing wrapper code**. The tool definitions and dispatch layer are provided by the Vibium MCP server.
+This is what makes the agent pattern powerful: swap the driver, keep the intelligence.
 
-## Architecture preview
+## Two approaches
+
+| Approach | Code required | Best for |
+|----------|--------------|----------|
+| **Programmatic** (`python/`, `typescript/`) | Tool wrappers + agent loop (same structure as M02) | CI/CD, custom tools, full control |
+| **MCP** (`mcp/`) | Zero — one config block | Claude Code sessions, rapid prototyping |
+
+## What changes from Module 02 (Playwright → Vibium)
+
+### Python
+
+```python
+# Module 02 (Playwright)
+from playwright.sync_api import sync_playwright
+
+with sync_playwright() as p:
+    browser = p.chromium.launch(headless=headless)
+    page = browser.new_page()
+    # ...
+    browser.close()
+
+# Module 03 (Vibium)
+from vibium import browser as vibium_browser
+
+bro = vibium_browser.start(headless=headless)
+page = bro.new_page()
+# ...
+bro.close()
+```
+
+### API comparison
+
+| Action | Playwright | Vibium |
+|--------|-----------|--------|
+| Navigate | `page.goto(url)` | `page.go(url)` |
+| Find by role+text | `page.get_by_role(role, name=text)` | `page.find({role, text})` |
+| Click | `locator.click()` | `el.click()` |
+| Fill | `locator.fill(value)` | `el.fill(value)` |
+| Inner text | `locator.inner_text()` | `el.inner_text()` |
+| Check visible | `locator.is_visible()` | `el.is_visible()` |
+| Screenshot | `page.screenshot(path=p)` | `page.capture.screenshot(path=p)` |
+| Page title | `page.title()` | `page.title()` |
+| Current URL | `page.url` | `page.url` |
+
+### TypeScript
+
+```typescript
+// Module 02 (Playwright)
+import { chromium } from "playwright";
+const browser = await chromium.launch({ headless });
+const page = await browser.newPage();
+
+// Module 03 (Vibium)
+import { browser } from "vibium";
+const bro = await browser.start({ headless });
+const page = await bro.newPage();
+```
+
+## Files
 
 ```
-agent  →  MCP client  →  Vibium MCP server  →  browser
+python/
+├── requirements.txt
+├── tools.py      ← Vibium Python API wrappers (compare with M02)
+├── agent.py      ← identical to Module 02
+└── run.py        ← same task as Module 02
+
+typescript/
+├── package.json
+├── tsconfig.json
+└── src/
+    ├── tools.ts  ← Vibium JS API wrappers (compare with M02)
+    ├── agent.ts  ← identical to Module 02
+    └── index.ts  ← same task as Module 02
+
+mcp/
+└── README.md     ← MCP approach: zero wrapper code
 ```
 
-Instead of `dispatch(name, inputs, page)`, you configure the MCP server and Claude calls Vibium tools natively.
+## Setup — Python
 
-## Tools available via Vibium MCP
+```bash
+pip install -r requirements.txt
+cp ../../.env.example .env   # add ANTHROPIC_API_KEY
+python run.py
+```
 
-| Category | Tools |
-|----------|-------|
-| Navigation | `browser_navigate`, `browser_reload`, `browser_back` |
-| Interaction | `browser_click`, `browser_fill`, `browser_type`, `browser_press` |
-| Assertions | `browser_find`, `browser_is_visible`, `browser_wait_for_text` |
-| Capture | `browser_screenshot`, `browser_get_text`, `browser_get_html` |
+## Setup — TypeScript
 
-## Coming in this module
+```bash
+npm install
+cp ../../.env.example .env
+npm start
+```
 
-- MCP server setup
-- How to use Vibium tools vs. writing your own wrappers
-- Side-by-side comparison with the Playwright agent from Module 02
-- When to choose each approach
+## What to observe when running
+
+Run the same task against Module 02 and Module 03 side by side. Notice:
+- The agent asks the same questions, makes the same decisions
+- The only difference is which API calls execute under the hood
+- Both produce the same screenshots and test report
+
+This confirms: **the intelligence is in the loop, not the driver**.
