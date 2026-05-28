@@ -1,6 +1,6 @@
 # Agent-Driven Test Automation
 
-A progressive course on building AI test agents with Playwright, vibium, and Selenium WebDriver BiDi.
+A progressive course on building AI test agents with Playwright, Vibium, and Selenium WebDriver BiDi.
 
 ## Course structure
 
@@ -8,7 +8,7 @@ A progressive course on building AI test agents with Playwright, vibium, and Sel
 |--------|-------|--------|
 | [01 — Foundations](01-foundations/) | What is a test agent? Core concepts. | ✅ |
 | [02 — Playwright](02-single-agent-playwright/) | Single-agent runner: Python + TypeScript | ✅ |
-| [03 — vibium](03-single-agent-vibium/) | Single-agent runner via MCP | 🚧 |
+| [03 — Vibium](03-single-agent-vibium/) | Single-agent runner via MCP | 🚧 |
 | [04 — Selenium BiDi](04-single-agent-selenium-bidi/) | Single-agent runner with WebDriver BiDi | 🚧 |
 | [05 — Multi-agent](05-multi-agent/) | Orchestrator + parallel runners | 🚧 |
 | [06 — Full framework](06-full-framework/) | Specialist agents + reporter | 🚧 |

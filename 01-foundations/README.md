@@ -38,7 +38,7 @@ The LLM is the reasoning engine. The browser tools (navigate, click, fill, asser
          ▼
 ┌─────────────────────────────────────────────┐
 │              Browser driver                  │
-│   (Playwright / vibium / Selenium BiDi)     │
+│   (Playwright / Vibium / Selenium BiDi)     │
 └─────────────────────────────────────────────┘
 ```
 
