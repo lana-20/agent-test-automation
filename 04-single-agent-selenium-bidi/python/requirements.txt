@@ -1,0 +1,4 @@
+anthropic>=0.40.0
+selenium>=4.25.0
+webdriver-manager>=4.0.0
+python-dotenv>=1.0.0

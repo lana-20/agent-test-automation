@@ -1,0 +1,20 @@
+{
+  "name": "selenium-bidi-test-agent",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "npx ts-node src/index.ts",
+    "start:firefox": "BROWSER=firefox npx ts-node src/index.ts",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.40.0",
+    "dotenv": "^16.0.0",
+    "selenium-webdriver": "^4.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/selenium-webdriver": "^4.1.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}
