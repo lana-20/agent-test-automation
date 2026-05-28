@@ -12,6 +12,7 @@ A progressive course on building AI test agents with Playwright, Vibium, and Sel
 | [04 — Selenium BiDi](04-single-agent-selenium-bidi/) | Single-agent runner: Selenium + BiDi tools, Chrome + Firefox | ✅ |
 | [05 — Multi-agent](05-multi-agent/) | Orchestrator + parallel runners | ✅ |
 | [06 — Full framework](06-full-framework/) | Specialist agents + reporter | ✅ |
+| [07 — CI/CD](07-ci-cd/) | GitHub Actions: headless runs, artifacts, step summaries | ✅ |
 
 ## Prerequisites
 

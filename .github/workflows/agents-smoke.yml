@@ -1,0 +1,74 @@
+name: Smoke — single-agent runners
+
+on:
+  workflow_dispatch:
+
+# Run the three single-agent implementations against the same TodoMVC task
+# in parallel to confirm all drivers still work after dependency updates.
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Playwright (Python)
+            dir: 02-single-agent-playwright/python
+            lang: python
+            run: python run.py --headless
+
+          - name: Playwright (TypeScript)
+            dir: 02-single-agent-playwright/typescript
+            lang: node
+            run: npm run start:headless
+
+          - name: Vibium (Python)
+            dir: 03-single-agent-vibium/python
+            lang: python
+            run: python run.py --headless
+
+          - name: Selenium BiDi Chrome (Python)
+            dir: 04-single-agent-selenium-bidi/python
+            lang: python
+            run: python run.py chrome
+
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ matrix.dir }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        if: matrix.lang == 'python'
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - uses: actions/setup-node@v4
+        if: matrix.lang == 'node'
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install Python dependencies
+        if: matrix.lang == 'python'
+        run: pip install -r requirements.txt
+
+      - name: Install Node dependencies
+        if: matrix.lang == 'node'
+        run: npm install
+
+      - name: Install browser
+        run: |
+          if [ "${{ matrix.lang }}" = "python" ]; then
+            playwright install chromium --with-deps 2>/dev/null || true
+          else
+            npx playwright install chromium --with-deps
+          fi
+
+      - name: Run
+        run: ${{ matrix.run }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

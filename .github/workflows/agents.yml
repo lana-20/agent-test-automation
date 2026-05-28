@@ -1,0 +1,90 @@
+name: Agent Test Suite
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Python ──────────────────────────────────────────────────────────────────
+  python:
+    name: Python (Module 06)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 06-full-framework/python
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: 06-full-framework/python/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Chromium
+        run: playwright install chromium --with-deps
+
+      - name: Run test suite
+        run: python run.py --headless
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Write step summary
+        if: always()
+        run: python ../../07-ci-cd/scripts/step-summary.py report.json >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: report-python
+          path: |
+            06-full-framework/python/report.md
+            06-full-framework/python/report.json
+
+  # ── TypeScript ──────────────────────────────────────────────────────────────
+  typescript:
+    name: TypeScript (Module 06)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 06-full-framework/typescript
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: 06-full-framework/typescript/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: Run test suite
+        run: npm run start:headless
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Write step summary
+        if: always()
+        run: node ../../07-ci-cd/scripts/step-summary.js report.json >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: report-typescript
+          path: |
+            06-full-framework/typescript/report.md
+            06-full-framework/typescript/report.json
