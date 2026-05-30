@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Module 06 — Full Framework · Agent-Driven Test Automation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1a2a;--bg-dark:#0a1220;--card:#13243a;--card-dark:#0d1e30;
+  --off-white:#f5f0eb;--coral:#d4552a;--coral-light:#e8785a;
+  --mint:#4aa8a5;--mint-light:#9dbfb8;--gold:#b8862a;--gold-light:#d4a85a;
+  --violet:#7455bf;--violet-light:#9e85d4;--steel:#3d6abf;--steel-light:#7298d4;
+  --border:rgba(255,255,255,0.08);--border-mid:rgba(255,255,255,0.14);
+  --fg-2:rgba(245,240,235,0.65);--fg-3:rgba(245,240,235,0.38);
+  --accent:var(--violet-light);
+  --font-d:'Playfair Display',Georgia,serif;--font-b:'Inter',-apple-system,sans-serif;--font-m:'JetBrains Mono',monospace;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg-dark);color:var(--off-white)}
+body{font-family:var(--font-b)}
+.progress{position:fixed;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.07);z-index:200}
+.progress-fill{height:100%;background:var(--accent);transition:width .35s ease}
+.deck-hdr{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:16px 48px 0;z-index:199;pointer-events:none}
+.module-tag,.slide-num{font-family:var(--font-m);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-3)}
+.deck{width:100vw;height:100vh;position:relative}
+.slide{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .28s;overflow:hidden}
+.slide.active{opacity:1;pointer-events:all}
+.si{height:100%;display:flex;flex-direction:column;padding:72px 100px 76px;max-width:1480px;margin:0 auto}
+.nav-btn{position:fixed;bottom:28px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--fg-2);border-radius:50%;width:42px;height:42px;font-size:17px;cursor:pointer;transition:all .2s;z-index:200;display:flex;align-items:center;justify-content:center;user-select:none}
+.nav-btn:hover{background:rgba(255,255,255,0.11);color:var(--off-white)}
+.nav-btn.prev{left:36px}.nav-btn.next{right:36px}.nav-btn.dim{opacity:.28;pointer-events:none}
+.eyebrow{font-family:var(--font-m);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;opacity:.9}
+h2.st{font-family:var(--font-d);font-size:clamp(30px,3.2vw,48px);line-height:1.1;letter-spacing:-.02em;margin-bottom:32px}
+h2.st em{font-style:italic;color:var(--accent)}
+.sbody{font-size:17px;line-height:1.65;color:var(--fg-2);max-width:780px}
+.sbody strong{color:var(--off-white)}
+.pts{list-style:none}
+.pts li{display:flex;gap:14px;align-items:flex-start;margin-bottom:15px;font-size:16px;line-height:1.5;color:var(--fg-2)}
+.pts li::before{content:'—';color:var(--accent);font-weight:600;flex-shrink:0;margin-top:1px}
+.pts li strong{color:var(--off-white)}
+.code-card{background:var(--card-dark);border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0}
+.code-top{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px}
+.dot{width:11px;height:11px;border-radius:50%}.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+.code-lbl{margin-left:auto;font-family:var(--font-m);font-size:10.5px;color:var(--fg-3);letter-spacing:.1em}
+pre{padding:20px 24px;font-family:var(--font-m);font-size:12.5px;line-height:1.75;overflow-x:auto;white-space:pre}
+.kw{color:#e8785a}.fn{color:#9e85d4}.st{color:#9dbfb8}.cm{color:rgba(245,240,235,.32);font-style:italic}.tp{color:#9e85d4}.nu{color:#d4a85a}
+.tbl-wrap{overflow:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:14.5px}
+.tbl th{font-family:var(--font-m);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-3);padding:10px 14px;border-bottom:1px solid var(--border-mid);text-align:left}
+.tbl td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--fg-2);vertical-align:top;line-height:1.4}
+.tbl tr:last-child td{border-bottom:none}.tbl tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+.yes{color:#4aa8a5;font-weight:600}.no{color:var(--fg-3)}.hi{color:var(--off-white);font-weight:600}
+.cols-2{display:grid;grid-template-columns:1fr 1fr;gap:32px;flex:1}
+.col-5050{display:grid;grid-template-columns:1fr 1fr;gap:36px;flex:1}
+.col-4060{display:grid;grid-template-columns:40fr 60fr;gap:36px;flex:1}
+.tip{background:rgba(116,85,191,.07);border:1px solid rgba(116,85,191,.28);border-radius:8px;padding:16px 20px;margin-top:auto}
+.tip-lbl{font-family:var(--font-m);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--accent);margin-bottom:7px}
+.tip p{font-size:15px;color:var(--fg-2);line-height:1.5}.tip p strong{color:var(--off-white)}
+.take-row{display:flex;gap:18px;align-items:flex-start;margin-bottom:16px}
+.take-n{font-family:var(--font-d);font-size:42px;font-weight:400;color:var(--accent);opacity:.22;line-height:.9;flex-shrink:0;width:46px}
+.take-title{font-size:16px;font-weight:600;color:var(--off-white);margin-bottom:3px}
+.take-sub{font-size:14px;color:var(--fg-2);line-height:1.5}
+.s-title .si{align-items:center;justify-content:center;text-align:center}
+.title-bg-num{font-family:var(--font-d);font-size:240px;font-weight:400;color:var(--violet);opacity:.04;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;line-height:1;user-select:none}
+.course-label{font-family:var(--font-m);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--fg-3);margin-bottom:28px}
+.title-module{font-family:var(--font-m);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;opacity:.9}
+.title-h1{font-family:var(--font-d);font-size:clamp(36px,4.5vw,62px);line-height:1.05;letter-spacing:-.03em;margin-bottom:20px}
+.title-h1 em{font-style:italic;color:var(--accent)}
+.title-sub{font-size:17px;color:var(--fg-2);margin-bottom:40px}
+.pill{font-family:var(--font-m);font-size:11px;letter-spacing:.14em;padding:6px 14px;border:1px solid var(--border-mid);border-radius:999px;color:var(--fg-2)}
+.title-pills{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.s-next .si{align-items:center;justify-content:center}
+.next-arr{font-family:var(--font-d);font-size:80px;color:var(--accent);opacity:.2;text-align:center}
+.next-label{font-family:var(--font-m);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--fg-3);text-align:center;margin-bottom:16px}
+.next-title{font-family:var(--font-d);font-size:32px;text-align:center;margin-bottom:8px}
+.next-title em{font-style:italic;color:var(--accent)}
+.next-sub{font-size:15px;color:var(--fg-2);text-align:center}
+/* specialist colors */
+.arch{color:#e8785a}.run{color:#9dbfb8}.asrt{color:#9e85d4}.rep{color:#d4a85a}
+</style>
+</head>
+<body>
+<div class="progress"><div class="progress-fill" id="pf" style="width:7.69%"></div></div>
+<div class="deck-hdr">
+  <span class="module-tag">Module 06 · Full Framework — Specialist Agents</span>
+  <span class="slide-num" id="sn">1 / 13</span>
+</div>
+<div class="deck" id="deck">
+
+<!-- 01 TITLE -->
+<section class="slide s-title active">
+  <div class="title-bg-num">06</div>
+  <div class="si">
+    <div class="course-label">Agent-Driven Test Automation</div>
+    <div class="title-module">Module 06</div>
+    <h1 class="title-h1">Full Framework:<br><em>Specialist Agents</em></h1>
+    <p class="title-sub">Four agents. One pipeline. Automatic failure triage.</p>
+    <div class="title-pills">
+      <span class="pill">Architect</span><span class="pill">Runner × N</span>
+      <span class="pill">Asserter</span><span class="pill">Reporter</span>
+      <span class="pill">Priority dispatch</span><span class="pill">~35 min</span>
+    </div>
+  </div>
+</section>
+
+<!-- 02 SPECIALIST VS GENERALIST -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Architecture</div>
+    <h2 class="st">One responsibility<br><em>per agent.</em></h2>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;flex:0">
+      <div style="background:rgba(212,85,42,.08);border:1px solid rgba(212,85,42,.25);border-radius:8px;padding:16px 20px;text-align:center;flex:1">
+        <div class="arch" style="font-family:var(--font-m);font-size:11px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:6px">Architect</div>
+        <div style="font-size:14px;color:var(--off-white);font-weight:600">Plans</div>
+        <div style="font-size:12px;color:var(--fg-3);margin-top:4px">Never touches a browser</div>
+      </div>
+      <div style="color:var(--fg-3);font-size:22px">→</div>
+      <div style="background:rgba(74,168,165,.08);border:1px solid rgba(74,168,165,.25);border-radius:8px;padding:16px 20px;text-align:center;flex:1">
+        <div class="run" style="font-family:var(--font-m);font-size:11px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:6px">Runners × N</div>
+        <div style="font-size:14px;color:var(--off-white);font-weight:600">Execute</div>
+        <div style="font-size:12px;color:var(--fg-3);margin-top:4px">Never decide what to test</div>
+      </div>
+      <div style="color:var(--fg-3);font-size:22px">→</div>
+      <div style="background:rgba(116,85,191,.08);border:1px solid rgba(116,85,191,.25);border-radius:8px;padding:16px 20px;text-align:center;flex:1">
+        <div class="asrt" style="font-family:var(--font-m);font-size:11px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:6px">Asserter</div>
+        <div style="font-size:14px;color:var(--off-white);font-weight:600">Classifies</div>
+        <div style="font-size:12px;color:var(--fg-3);margin-top:4px">Runs only on failures</div>
+      </div>
+      <div style="color:var(--fg-3);font-size:22px">→</div>
+      <div style="background:rgba(184,134,42,.08);border:1px solid rgba(184,134,42,.25);border-radius:8px;padding:16px 20px;text-align:center;flex:1">
+        <div class="rep" style="font-family:var(--font-m);font-size:11px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:6px">Reporter</div>
+        <div style="font-size:14px;color:var(--off-white);font-weight:600">Formats</div>
+        <div style="font-size:12px;color:var(--fg-3);margin-top:4px">No API calls</div>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>Concern</th><th>Generalist (Module 05)</th><th>Specialist (Module 06)</th></tr></thead>
+        <tbody>
+          <tr><td class="hi">System prompt</td><td>Describes all roles</td><td class="yes">Focused on one role</td></tr>
+          <tr><td class="hi">Reasoning quality</td><td>Diluted</td><td class="yes">Deep — one responsibility</td></tr>
+          <tr><td class="hi">Failure analysis</td><td class="no">None</td><td class="yes">Asserter classifies every failure</td></tr>
+          <tr><td class="hi">Reusability</td><td>Monolithic</td><td class="yes">Mix and match specialists</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 03 RICHER MODELS -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">models.py · Richer Schemas</div>
+    <h2 class="st">Three new fields.<br><em>Real decision data.</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">models.py — TestScenario</div></div>
+        <pre><span class="kw">@dataclass</span>
+<span class="kw">class</span> <span class="tp">TestScenario</span>:
+    id: <span class="tp">str</span>
+    title: <span class="tp">str</span>
+    url: <span class="tp">str</span>
+    steps: <span class="tp">list</span>[<span class="tp">str</span>]
+    <span class="cm"># NEW ↓</span>
+    priority: <span class="tp">Literal</span>[<span class="st">"high"</span>, <span class="st">"medium"</span>, <span class="st">"low"</span>]
+    category: <span class="tp">str</span>  <span class="cm"># smoke/regression/edge-case</span>
+    expected_outcome: <span class="tp">str</span>  <span class="cm"># one sentence</span></pre>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">models.py — Finding</div></div>
+        <pre><span class="kw">@dataclass</span>
+<span class="kw">class</span> <span class="tp">Finding</span>:
+    scenario_id: <span class="tp">str</span>
+    title: <span class="tp">str</span>
+    classification: <span class="tp">Literal</span>[
+        <span class="st">"bug"</span>,             <span class="cm"># file a bug</span>
+        <span class="st">"expected-failure"</span>, <span class="cm"># known issue</span>
+        <span class="st">"flaky"</span>,            <span class="cm"># timing issue</span>
+        <span class="st">"environment"</span>       <span class="cm"># infra problem</span>
+    ]
+    severity: <span class="tp">Literal</span>[<span class="st">"critical"</span>,<span class="st">"high"</span>,<span class="st">"medium"</span>,<span class="st">"low"</span>]
+    description: <span class="tp">str</span>
+    suggested_action: <span class="tp">str</span></pre>
+      </div>
+    </div>
+    <div class="tip" style="margin-top:12px">
+      <div class="tip-lbl">Classification maps to real QA workflow</div>
+      <p>bug → file a report &nbsp;·&nbsp; expected-failure → skip/update test &nbsp;·&nbsp; flaky → add wait &nbsp;·&nbsp; environment → investigate infra. <strong>The Asserter does the triage.</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- 04 ARCHITECT + ASSERTER TOOL SCHEMAS -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">architect.py + asserter.py · tool_choice</div>
+    <h2 class="st">Enum constraints lock<br><em>values at the API.</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">architect.py — schema excerpt</div></div>
+        <pre><span class="st">"priority"</span>: {
+  <span class="st">"enum"</span>: [<span class="st">"high"</span>, <span class="st">"medium"</span>, <span class="st">"low"</span>]
+},
+<span class="st">"category"</span>: { <span class="st">"type"</span>: <span class="st">"string"</span> },
+<span class="st">"expected_outcome"</span>: { <span class="st">"type"</span>: <span class="st">"string"</span> }
+
+<span class="cm"># API rejects any priority value not in enum.
+# Type safety at the API boundary.</span></pre>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">asserter.py — classify_failure schema</div></div>
+        <pre><span class="st">"classification"</span>: {
+  <span class="st">"enum"</span>: [
+    <span class="st">"bug"</span>, <span class="st">"expected-failure"</span>,
+    <span class="st">"flaky"</span>, <span class="st">"environment"</span>
+  ]
+},
+<span class="st">"severity"</span>: {
+  <span class="st">"enum"</span>: [<span class="st">"critical"</span>, <span class="st">"high"</span>, <span class="st">"medium"</span>, <span class="st">"low"</span>]
+},
+<span class="st">"description"</span>: { <span class="st">"type"</span>: <span class="st">"string"</span> },
+<span class="st">"suggested_action"</span>: { <span class="st">"type"</span>: <span class="st">"string"</span> }</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 ASSERTER PROMPT CONSTRUCTION -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">agents/asserter.py</div>
+    <h2 class="st">The Asserter receives<br><em>execution log + expected outcome.</em></h2>
+    <div class="code-card" style="flex:1">
+      <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">asserter.py — classify()</div></div>
+      <pre>log_text = <span class="st">"\n"</span>.<span class="fn">join</span>(
+    <span class="st">f"  </span>{entry[<span class="st">'tool'</span>]}<span class="st">(</span>{entry[<span class="st">'input'</span>]}<span class="st">) → </span>{entry[<span class="st">'result'</span>]}<span class="st">"</span>
+    <span class="kw">for</span> entry <span class="kw">in</span> result.step_log
+)
+
+prompt = (
+    <span class="st">f"Scenario: </span>{scenario.title}<span class="st">\n"</span>
+    <span class="st">f"Expected outcome: </span>{scenario.expected_outcome}<span class="st">\n\n"</span>
+    <span class="cm"># ↑ Without expected_outcome, Asserter must infer the goal.</span>
+    <span class="cm">#   With it, it has an explicit target to compare against.</span>
+    <span class="st">f"Execution log:\n</span>{log_text}<span class="st">\n\n"</span>
+    <span class="st">f"Runner summary:\n</span>{result.summary}<span class="st">"</span>
+)
+
+response = client.messages.<span class="fn">create</span>(
+    tools=[_CLASSIFY_TOOL],
+    tool_choice={ <span class="st">"type"</span>: <span class="st">"tool"</span>, <span class="st">"name"</span>: <span class="st">"classify_failure"</span> },
+    messages=[{ <span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: prompt }],
+    ...
+)</pre>
+    </div>
+    <div class="tip" style="margin-top:12px">
+      <div class="tip-lbl">expected_outcome is the Asserter's anchor</div>
+      <p>The Asserter compares actual behavior to <code style="font-family:var(--font-m);font-size:12px">expected_outcome</code>. <strong>Without it, failure classification is guesswork. With it, the analysis is grounded.</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- 06 ORCHESTRATOR PRIORITY DISPATCH -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">orchestrator.py</div>
+    <h2 class="st">High priority first.<br><em>Fail fast if they fail.</em></h2>
+    <div class="code-card" style="flex:1">
+      <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">orchestrator.py — priority-aware dispatch</div></div>
+      <pre>high = [s <span class="kw">for</span> s <span class="kw">in</span> scenarios <span class="kw">if</span> s.priority == <span class="st">"high"</span>]
+rest = [s <span class="kw">for</span> s <span class="kw">in</span> scenarios <span class="kw">if</span> s.priority != <span class="st">"high"</span>]
+
+<span class="kw">with</span> <span class="fn">ThreadPoolExecutor</span>(max_workers=<span class="fn">max</span>(<span class="fn">len</span>(high), <span class="nu">1</span>)) <span class="kw">as</span> pool:
+    futures = { pool.<span class="fn">submit</span>(run, s, headless): s <span class="kw">for</span> s <span class="kw">in</span> high }
+    <span class="kw">for</span> future <span class="kw">in</span> <span class="fn">as_completed</span>(futures):
+        results.<span class="fn">append</span>(future.<span class="fn">result</span>())
+
+critical_failures = [r <span class="kw">for</span> r <span class="kw">in</span> results <span class="kw">if not</span> r.passed]
+<span class="kw">if</span> critical_failures:
+    <span class="fn">print</span>(<span class="st">f"{len(critical_failures)} high-priority failure(s) — skipping rest."</span>)
+<span class="kw">else</span>:
+    <span class="cm"># run medium + low scenarios in parallel</span>
+
+<span class="cm"># Asserter runs ONLY on failures — not on passing scenarios</span>
+failed = [r <span class="kw">for</span> r <span class="kw">in</span> all_results <span class="kw">if not</span> r.passed]
+<span class="kw">if</span> failed:
+    findings = [<span class="fn">classify</span>(scenario_map[r.scenario_id], r) <span class="kw">for</span> r <span class="kw">in</span> failed]</pre>
+    </div>
+  </div>
+</section>
+
+<!-- 07 LIVE DEMO: FAILURE + ASSERTER -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Live Demo · Failure Run</div>
+    <h2 class="st">The Asserter<br><em>triages the failure.</em></h2>
+    <div class="code-card" style="flex:1">
+      <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">terminal — failure output</div></div>
+      <pre>[Architect] Generated <span class="nu">5</span> scenario(s):
+  [TC-01] [HIGH]   Add and verify multiple todos  (smoke)
+  [TC-02] [HIGH]   Mark todo complete, check filter  (smoke)
+  [TC-03] [MEDIUM] Delete a todo, verify count  (regression)
+  ...
+
+Running <span class="nu">2</span> high-priority scenario(s) first...
+[TC-01] PASS
+[TC-02] PASS
+
+Running <span class="nu">3</span> remaining scenario(s)...
+<span style="color:#e8785a">[TC-03] FAIL — Delete action did not remove the item.</span>
+
+Classifying <span class="nu">1</span> failure(s)...
+
+[Asserter:TC-03] <span class="asrt">BUG (high)</span> — Delete button did not render on hover.
+The todo item remained in the list after the deletion attempt.
+The button is present in the DOM but has opacity: 0 until the
+list item is hovered. The agent's click did not trigger a hover.
+Suggested action: Add a hover step before the delete click.
+
+[Reporter] RESULTS  <span class="nu">4</span>/<span class="nu">5</span> passed · <span class="nu">1</span> bug found
+[Reporter] report.md written
+[Reporter] report.json written</pre>
+    </div>
+  </div>
+</section>
+
+<!-- 08 REPORTER.PY -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">agents/reporter.py</div>
+    <h2 class="st">Two outputs.<br><em>Humans and machines.</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">reporter.py — write_markdown()</div></div>
+        <pre><span class="kw">def</span> <span class="fn">write_markdown</span>(report, path=<span class="st">"report.md"</span>):
+    ts = datetime.<span class="fn">now</span>().<span class="fn">strftime</span>(<span class="st">"%Y-%m-%d %H:%M UTC"</span>)
+    lines = [
+        <span class="st">f"# Test Report — </span>{ts}<span class="st">"</span>,
+        <span class="st">"| Total | Passed | Failed | Bugs |"</span>,
+        <span class="st">f"| </span>{report.total}<span class="st"> | </span>{report.passed}<span class="st"> | ..."</span>,
+    ]
+    <span class="kw">for</span> r <span class="kw">in</span> report.results:
+        icon = <span class="st">"✅"</span> <span class="kw">if</span> r.passed <span class="kw">else</span> <span class="st">"❌"</span>
+        lines.<span class="fn">append</span>(<span class="st">f"### </span>{icon}<span class="st"> [</span>{r.scenario_id}<span class="st">] </span>{r.title}<span class="st">"</span>)
+    <span class="kw">if</span> report.findings:
+        <span class="kw">for</span> f <span class="kw">in</span> <span class="fn">sorted_by_severity</span>(report.findings):
+            lines.<span class="fn">append</span>(<span class="st">f"### [{f.severity.upper()}] </span>{f.title}<span class="st">"</span>)
+            lines.<span class="fn">append</span>(<span class="st">f"- **Classification:** </span>{f.classification}<span class="st">"</span>)
+            lines.<span class="fn">append</span>(<span class="st">f"- **Next action:** </span>{f.suggested_action}<span class="st">"</span>)</pre>
+      </div>
+      <div>
+        <p class="sbody" style="margin-bottom:16px">The Reporter is the <strong>only agent that calls no APIs</strong>. It's pure formatting logic. Change the output format without touching any other agent.</p>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="padding:14px 16px;background:var(--card);border:1px solid var(--border);border-radius:7px">
+            <div style="font-family:var(--font-m);font-size:11px;color:var(--rep);margin-bottom:4px">report.md</div>
+            <div style="font-size:13px;color:var(--fg-2)">Formatted Markdown. Paste into PR descriptions, Confluence, release notes.</div>
+          </div>
+          <div style="padding:14px 16px;background:var(--card);border:1px solid var(--border);border-radius:7px">
+            <div style="font-family:var(--font-m);font-size:11px;color:var(--rep);margin-bottom:4px">report.json</div>
+            <div style="font-size:13px;color:var(--fg-2)">Machine-readable. CI artifact in Module 07. Push to test management systems.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 09 KEY TAKEAWAYS -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Module 06 · Key Takeaways</div>
+    <h2 class="st">Six things<br><em>to carry forward.</em></h2>
+    <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="take-row"><div class="take-n">1</div><div><div class="take-title">Focused system prompts produce better reasoning</div><div class="take-sub">One responsibility per agent. Narrow scope means clearer thinking.</div></div></div>
+      <div class="take-row"><div class="take-n">2</div><div><div class="take-title">Data model = API contract</div><div class="take-sub">TestScenario, RunnerResult, Finding — define first, code second.</div></div></div>
+      <div class="take-row"><div class="take-n">3</div><div><div class="take-title">tool_choice appears twice</div><div class="take-sub">Architect and Asserter both use it. Schema validation at the API boundary, both times.</div></div></div>
+      <div class="take-row"><div class="take-n">4</div><div><div class="take-title">Priority-aware: fail fast on high</div><div class="take-sub">Smoke tests gate regression tests. Saves time and API cost on large suites.</div></div></div>
+      <div class="take-row"><div class="take-n">5</div><div><div class="take-title">Asserter runs only on failures</div><div class="take-sub">Spend AI compute where analysis matters — not on passing scenarios.</div></div></div>
+      <div class="take-row"><div class="take-n">6</div><div><div class="take-title">Reporter writes two files</div><div class="take-sub">report.md for humans, report.json for machines. Both become CI artifacts in Module 07.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 EVAL CHECKPOINT -->
+<section class="slide">
+  <div class="si">
+    <div style="font-family:var(--font-m);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);margin-bottom:20px">eval checkpoint</div>
+    <h2 style="font-family:var(--font-d);font-size:clamp(28px,3vw,44px);margin-bottom:24px">Eval Your <em>Full Framework</em></h2>
+    <p style="color:var(--fg-2);margin-bottom:24px">Four specialists = four eval targets. Each can fail independently.</p>
+    <table class="tbl" style="margin-bottom:24px">
+      <thead><tr><th>Specialist</th><th>What to eval</th><th>Judge type</th></tr></thead>
+      <tbody>
+        <tr><td style="color:#e8785a">Architect</td><td>Did it generate ≥ N valid test scenarios for the task?</td><td>Deterministic (count)</td></tr>
+        <tr><td style="color:#4aa8a5">Runner</td><td>Did tool calls match expected tools? No hallucinations?</td><td>Trajectory</td></tr>
+        <tr><td style="color:#9e85d4">Asserter</td><td>Did classify() label severity correctly on known-severity bugs?</td><td>LLM judge (accuracy)</td></tr>
+        <tr><td style="color:#d4a85a">Reporter</td><td>Is markdown output well-formed? Does it include all Finding fields?</td><td>Deterministic (schema check)</td></tr>
+      </tbody>
+    </table>
+    <div class="tip">The Asserter's LLM judge output is itself an eval input — use it to measure Asserter quality against a golden severity dataset.</div>
+  </div>
+</section>
+
+<!-- 11 NEXT -->
+<section class="slide s-next">
+  <div class="si">
+    <div style="text-align:center;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px">
+      <div class="next-label">Up next — final module</div>
+      <div class="next-arr">→</div>
+      <div class="next-title">Module 07: <em>CI/CD Integration</em></div>
+      <div class="next-sub" style="max-width:500px">Put everything in GitHub Actions. Headless, parallel, with report artifacts uploaded and results rendered directly in the PR UI. The full pipeline, automated on every push.</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:8px">
+        <span class="pill">agents.yml</span><span class="pill">if: always()</span>
+        <span class="pill">$GITHUB_STEP_SUMMARY</span><span class="pill">fail-fast: false</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+<button class="nav-btn prev dim" id="prevBtn">←</button>
+<button class="nav-btn next" id="nextBtn">→</button>
+<script>
+const slides=document.querySelectorAll('.slide'),total=slides.length;let cur=0;
+function show(n){slides[cur].classList.remove('active');cur=Math.max(0,Math.min(n,total-1));slides[cur].classList.add('active');document.getElementById('sn').textContent=`${cur+1} / ${total}`;document.getElementById('pf').style.width=`${((cur+1)/total)*100}%`;document.getElementById('prevBtn').classList.toggle('dim',cur===0);document.getElementById('nextBtn').classList.toggle('dim',cur===total-1);}
+function next(){show(cur+1);}function prev(){show(cur-1);}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){e.preventDefault();next();}if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();prev();}if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}});
+document.getElementById('deck').addEventListener('click',e=>{if(!e.target.closest('.nav-btn'))next();});
+document.getElementById('prevBtn').addEventListener('click',e=>{e.stopPropagation();prev();});
+document.getElementById('nextBtn').addEventListener('click',e=>{e.stopPropagation();next();});
+</script>
+</body>
+</html>

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Module 04 — Selenium BiDi · Agent-Driven Test Automation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1a2a;--bg-dark:#0a1220;--card:#13243a;--card-dark:#0d1e30;
+  --off-white:#f5f0eb;--coral:#d4552a;--coral-light:#e8785a;
+  --mint:#4aa8a5;--mint-light:#9dbfb8;--gold:#b8862a;--gold-light:#d4a85a;
+  --violet:#7455bf;--violet-light:#9e85d4;--steel:#3d6abf;--steel-light:#7298d4;
+  --border:rgba(255,255,255,0.08);--border-mid:rgba(255,255,255,0.14);
+  --fg-2:rgba(245,240,235,0.65);--fg-3:rgba(245,240,235,0.38);
+  --accent:var(--steel-light);
+  --font-d:'Playfair Display',Georgia,serif;--font-b:'Inter',-apple-system,sans-serif;--font-m:'JetBrains Mono',monospace;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg-dark);color:var(--off-white)}
+body{font-family:var(--font-b)}
+.progress{position:fixed;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.07);z-index:200}
+.progress-fill{height:100%;background:var(--accent);transition:width .35s ease}
+.deck-hdr{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:16px 48px 0;z-index:199;pointer-events:none}
+.module-tag,.slide-num{font-family:var(--font-m);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-3)}
+.deck{width:100vw;height:100vh;position:relative}
+.slide{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .28s;overflow:hidden}
+.slide.active{opacity:1;pointer-events:all}
+.si{height:100%;display:flex;flex-direction:column;padding:72px 100px 76px;max-width:1480px;margin:0 auto}
+.nav-btn{position:fixed;bottom:28px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--fg-2);border-radius:50%;width:42px;height:42px;font-size:17px;cursor:pointer;transition:all .2s;z-index:200;display:flex;align-items:center;justify-content:center;user-select:none}
+.nav-btn:hover{background:rgba(255,255,255,0.11);color:var(--off-white)}
+.nav-btn.prev{left:36px}.nav-btn.next{right:36px}.nav-btn.dim{opacity:.28;pointer-events:none}
+.eyebrow{font-family:var(--font-m);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;opacity:.9}
+h2.st{font-family:var(--font-d);font-size:clamp(30px,3.2vw,48px);line-height:1.1;letter-spacing:-.02em;margin-bottom:32px}
+h2.st em{font-style:italic;color:var(--accent)}
+.sbody{font-size:17px;line-height:1.65;color:var(--fg-2);max-width:780px}
+.sbody strong{color:var(--off-white)}
+.pts{list-style:none}
+.pts li{display:flex;gap:14px;align-items:flex-start;margin-bottom:15px;font-size:16.5px;line-height:1.5;color:var(--fg-2)}
+.pts li::before{content:'—';color:var(--accent);font-weight:600;flex-shrink:0;margin-top:1px}
+.pts li strong{color:var(--off-white)}
+.code-card{background:var(--card-dark);border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0}
+.code-top{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px}
+.dot{width:11px;height:11px;border-radius:50%}.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+.code-lbl{margin-left:auto;font-family:var(--font-m);font-size:10.5px;color:var(--fg-3);letter-spacing:.1em}
+pre{padding:22px 26px;font-family:var(--font-m);font-size:13px;line-height:1.75;overflow-x:auto;white-space:pre}
+.kw{color:#e8785a}.fn{color:#7298d4}.st{color:#9dbfb8}.cm{color:rgba(245,240,235,.32);font-style:italic}.tp{color:#9e85d4}.nu{color:#d4a85a}
+.tbl-wrap{overflow:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th{font-family:var(--font-m);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-3);padding:11px 16px;border-bottom:1px solid var(--border-mid);text-align:left}
+.tbl td{padding:12px 16px;border-bottom:1px solid var(--border);color:var(--fg-2);vertical-align:top;line-height:1.4}
+.tbl tr:last-child td{border-bottom:none}.tbl tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+.yes{color:#4aa8a5;font-weight:600}.no{color:var(--fg-3)}.hi{color:var(--off-white);font-weight:600}
+.cols-2{display:grid;grid-template-columns:1fr 1fr;gap:36px;flex:1}
+.col-5050{display:grid;grid-template-columns:1fr 1fr;gap:36px;flex:1}
+.col-4060{display:grid;grid-template-columns:40fr 60fr;gap:36px;flex:1}
+.tip{background:rgba(61,106,191,.08);border:1px solid rgba(61,106,191,.28);border-radius:8px;padding:16px 20px;margin-top:auto}
+.tip-lbl{font-family:var(--font-m);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--accent);margin-bottom:7px}
+.tip p{font-size:15px;color:var(--fg-2);line-height:1.5}.tip p strong{color:var(--off-white)}
+.take-row{display:flex;gap:18px;align-items:flex-start;margin-bottom:18px}
+.take-n{font-family:var(--font-d);font-size:44px;font-weight:400;color:var(--accent);opacity:.22;line-height:.9;flex-shrink:0;width:48px}
+.take-title{font-size:16px;font-weight:600;color:var(--off-white);margin-bottom:3px}
+.take-sub{font-size:14px;color:var(--fg-2);line-height:1.5}
+.s-title .si{align-items:center;justify-content:center;text-align:center}
+.title-bg-num{font-family:var(--font-d);font-size:240px;font-weight:400;color:var(--steel);opacity:.04;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;line-height:1;user-select:none}
+.course-label{font-family:var(--font-m);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--fg-3);margin-bottom:28px}
+.title-module{font-family:var(--font-m);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;opacity:.9}
+.title-h1{font-family:var(--font-d);font-size:clamp(36px,4.5vw,62px);line-height:1.05;letter-spacing:-.03em;margin-bottom:20px}
+.title-h1 em{font-style:italic;color:var(--accent)}
+.title-sub{font-size:17px;color:var(--fg-2);margin-bottom:40px}
+.pill{font-family:var(--font-m);font-size:11px;letter-spacing:.14em;padding:6px 14px;border:1px solid var(--border-mid);border-radius:999px;color:var(--fg-2)}
+.title-pills{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.s-next .si{align-items:center;justify-content:center}
+.next-arr{font-family:var(--font-d);font-size:80px;color:var(--accent);opacity:.2;text-align:center}
+.next-label{font-family:var(--font-m);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--fg-3);text-align:center;margin-bottom:16px}
+.next-title{font-family:var(--font-d);font-size:32px;text-align:center;margin-bottom:8px}
+.next-title em{font-style:italic;color:var(--accent)}
+.next-sub{font-size:15px;color:var(--fg-2);text-align:center}
+.bidi-card{background:var(--card);border:1px solid var(--border-mid);border-radius:8px;padding:20px 22px}
+.bidi-tag{font-family:var(--font-m);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.bidi-name{font-size:15px;font-weight:600;color:var(--off-white);margin-bottom:6px}
+.bidi-desc{font-size:13px;color:var(--fg-2);line-height:1.5}
+</style>
+</head>
+<body>
+<div class="progress"><div class="progress-fill" id="pf" style="width:6.67%"></div></div>
+<div class="deck-hdr">
+  <span class="module-tag">Module 04 · Selenium WebDriver BiDi</span>
+  <span class="slide-num" id="sn">1 / 15</span>
+</div>
+<div class="deck" id="deck">
+
+<!-- 01 TITLE -->
+<section class="slide s-title active">
+  <div class="title-bg-num">04</div>
+  <div class="si">
+    <div class="course-label">Agent-Driven Test Automation</div>
+    <div class="title-module">Module 04</div>
+    <h1 class="title-h1">Single-Agent Runner:<br><em>Selenium WebDriver BiDi</em></h1>
+    <p class="title-sub">Chrome AND Firefox. Plus three tools the other drivers can't match.</p>
+    <div class="title-pills">
+      <span class="pill">XPath union strategy</span><span class="pill">get_browser_logs</span>
+      <span class="pill">execute_script</span><span class="pill">W3C BiDi protocol</span><span class="pill">~34 min</span>
+    </div>
+  </div>
+</section>
+
+<!-- 02 TWO BROWSERS ONE AGENT -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">The Headline</div>
+    <h2 class="st">Two browsers.<br><em>One agent. Same code.</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div>
+        <p class="sbody" style="margin-bottom:20px">Selenium 4 with WebDriver BiDi is the W3C standard. Browser vendors are actively building to it. The result: first-class cross-browser support without browser-specific shims.</p>
+        <div class="code-card">
+          <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">terminal</div></div>
+          <pre><span class="cm"># Chrome (default)</span>
+python run.py
+
+<span class="cm"># Firefox — one flag</span>
+python run.py firefox
+
+<span class="cm"># In CI: two parallel jobs</span>
+python run.py chrome
+python run.py firefox</pre>
+        </div>
+      </div>
+      <div>
+        <p class="sbody" style="margin-bottom:16px">Plus three new tools that weren't possible before:</p>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="padding:14px 16px;background:rgba(61,106,191,.1);border:1px solid rgba(61,106,191,.22);border-radius:7px">
+            <div style="font-family:var(--font-m);font-size:12px;color:var(--steel-light);margin-bottom:4px">get_browser_logs</div>
+            <div style="font-size:14px;color:var(--fg-2)">JavaScript console — INFO, WARNING, SEVERE</div>
+          </div>
+          <div style="padding:14px 16px;background:rgba(61,106,191,.1);border:1px solid rgba(61,106,191,.22);border-radius:7px">
+            <div style="font-family:var(--font-m);font-size:12px;color:var(--steel-light);margin-bottom:4px">execute_script</div>
+            <div style="font-size:14px;color:var(--fg-2)">Run JavaScript, read localStorage, verify events</div>
+          </div>
+          <div style="padding:14px 16px;background:rgba(61,106,191,.1);border:1px solid rgba(61,106,191,.22);border-radius:7px">
+            <div style="font-family:var(--font-m);font-size:12px;color:var(--steel-light);margin-bottom:4px">intercept_network</div>
+            <div style="font-size:14px;color:var(--fg-2)">Block requests, test offline / error states</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 WHY SELENIUM BIDI TABLE -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Why Selenium BiDi?</div>
+    <h2 class="st">W3C standard.<br><em>Cross-browser confidence.</em></h2>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr><th>Feature</th><th>Playwright</th><th>Vibium</th><th>Selenium BiDi</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="hi">Chrome</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td class="hi">Firefox</td><td class="yes">✓</td><td class="no">—</td><td class="yes">✓</td></tr>
+          <tr><td class="hi">Safari</td><td>limited</td><td class="no">—</td><td class="yes">✓</td></tr>
+          <tr><td class="hi">Console logs</td><td class="yes">✓</td><td>via MCP</td><td class="yes">✓ CDP + BiDi</td></tr>
+          <tr><td class="hi">Network intercept</td><td class="yes">✓</td><td>via MCP</td><td class="yes">✓</td></tr>
+          <tr><td class="hi">W3C standard</td><td>partial</td><td class="no">—</td><td class="yes">✓ BiDi spec</td></tr>
+          <tr><td class="hi">Built-in auto-wait</td><td class="yes">✓</td><td class="yes">✓</td><td>Manual WebDriverWait</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 04 XPATH TRADEOFF -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">The Tradeoff</div>
+    <h2 class="st">No getByRole —<br><em>so we build one.</em></h2>
+    <div class="col-4060" style="align-items:start">
+      <div>
+        <p class="sbody" style="margin-bottom:16px">Selenium 4 has no built-in ARIA role locator. We write a helper that builds XPath expressions combining two strategies:</p>
+        <ul class="pts" style="margin-top:0">
+          <li><strong>Semantic HTML</strong> — map roles to HTML tags. A "button" is a <code style="font-family:var(--font-m);font-size:13px">&lt;button&gt;</code>.</li>
+          <li><strong>Explicit ARIA</strong> — catch <code style="font-family:var(--font-m);font-size:13px">&lt;div role="button"&gt;</code> components.</li>
+          <li>XPath <strong>union operator |</strong> — OR: either match works.</li>
+        </ul>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">tools.py — _by_role_and_text()</div></div>
+        <pre>ROLE_TO_ELEMENTS = {
+    <span class="st">"button"</span>:   <span class="st">"button"</span>,
+    <span class="st">"link"</span>:     <span class="st">"a"</span>,
+    <span class="st">"heading"</span>:  <span class="st">"h1|h2|h3|h4|h5|h6"</span>,
+    <span class="st">"checkbox"</span>: <span class="st">"input[@type='checkbox']"</span>,
+    <span class="st">"listitem"</span>: <span class="st">"li"</span>,
+}
+
+<span class="kw">def</span> <span class="fn">_by_role_and_text</span>(role, text):
+    tag = ROLE_TO_ELEMENTS.<span class="fn">get</span>(role, <span class="st">"*"</span>)
+    <span class="kw">return</span> (
+        <span class="st">f"//{tag}[contains(normalize-space(),'{text}')]"</span>
+        <span class="st">f" | //*[@role='{role}']"</span>
+          <span class="st">f"[contains(normalize-space(),'{text}')]"</span>
+    )</pre>
+      </div>
+    </div>
+    <div class="tip" style="margin-top:12px">
+      <div class="tip-lbl">XPath union semantics</div>
+      <p><code style="font-family:var(--font-m);font-size:12px">//button[...]</code> catches semantic HTML &nbsp;·&nbsp; <code style="font-family:var(--font-m);font-size:12px">| //*[@role='button'][...]</code> catches explicit ARIA attributes. Together they cover both patterns in every browser.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 05 CLICK WITH WEBDRIVERWAIT -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">tools.py · click</div>
+    <h2 class="st">WebDriverWait for<br><em>manual auto-waiting.</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">click implementation</div></div>
+        <pre><span class="kw">from</span> selenium.webdriver.support.ui <span class="kw">import</span> WebDriverWait
+<span class="kw">from</span> selenium.webdriver.support <span class="kw">import</span> expected_conditions <span class="kw">as</span> EC
+<span class="kw">from</span> selenium.webdriver.common.by <span class="kw">import</span> By
+
+<span class="kw">if</span> name == <span class="st">"click"</span>:
+    xpath = <span class="fn">_by_role_and_text</span>(
+        inputs[<span class="st">"role"</span>], inputs[<span class="st">"text"</span>]
+    )
+    el = <span class="fn">WebDriverWait</span>(driver, <span class="nu">5</span>).<span class="fn">until</span>(
+        EC.<span class="fn">element_to_be_clickable</span>((By.XPATH, xpath))
+    )
+    el.<span class="fn">click</span>()
+    <span class="kw">return</span> <span class="st">f"Clicked </span>{inputs[<span class="st">'role'</span>]}<span class="st"> '</span>{inputs[<span class="st">'text'</span>]}<span class="st">'"</span></pre>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">fill implementation</div></div>
+        <pre><span class="kw">if</span> name == <span class="st">"fill"</span>:
+    label_xpath = <span class="st">f"//label[contains(
+        normalize-space(),'{inputs['label']}')]"</span>
+    <span class="kw">try</span>:
+        label = driver.<span class="fn">find_element</span>(By.XPATH, label_xpath)
+        input_id = label.<span class="fn">get_attribute</span>(<span class="st">"for"</span>)
+        el = driver.<span class="fn">find_element</span>(By.ID, input_id)
+    <span class="kw">except</span> <span class="tp">Exception</span>:
+        el = driver.<span class="fn">find_element</span>(By.XPATH,
+            <span class="st">f"//input[@placeholder='{inputs['label']}']"</span>)
+    el.<span class="fn">clear</span>()        <span class="cm"># always clear first</span>
+    el.<span class="fn">send_keys</span>(inputs[<span class="st">"value"</span>])</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 THREE BIDI TOOLS -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">BiDi Extras</div>
+    <h2 class="st">Three tools the<br><em>other drivers can't offer.</em></h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;flex:1;align-content:start;margin-bottom:16px">
+      <div class="bidi-card">
+        <div class="bidi-tag">Tool 1</div>
+        <div class="bidi-name">get_browser_logs</div>
+        <div class="bidi-desc">Retrieves last 10 entries from the JS console. Level: INFO, WARNING, SEVERE. System prompt instructs: <em>call after every navigation</em>.</div>
+      </div>
+      <div class="bidi-card">
+        <div class="bidi-tag">Tool 2</div>
+        <div class="bidi-name">execute_script</div>
+        <div class="bidi-desc">Run arbitrary JavaScript, get the return value as a string. Fills the gap when accessible elements don't exist: localStorage, canvas, computed CSS.</div>
+      </div>
+      <div class="bidi-card">
+        <div class="bidi-tag">Tool 3</div>
+        <div class="bidi-name">intercept_network</div>
+        <div class="bidi-desc">Block requests matching a URL pattern via CDP. Test error states, offline behaviour, missing images. Chrome/Edge only — agent skips gracefully on Firefox.</div>
+      </div>
+    </div>
+    <div class="code-card">
+      <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">tools.py — get_browser_logs + execute_script</div></div>
+      <pre><span class="kw">if</span> name == <span class="st">"get_browser_logs"</span>:
+    logs = driver.<span class="fn">get_log</span>(<span class="st">"browser"</span>)
+    <span class="kw">if not</span> logs: <span class="kw">return</span> <span class="st">"No browser logs."</span>
+    <span class="kw">return</span> <span class="st">"\n"</span>.<span class="fn">join</span>(<span class="st">f"[</span>{e[<span class="st">'level'</span>]}<span class="st">] </span>{e.<span class="fn">get</span>(<span class="st">'message'</span>)}<span class="st">"</span> <span class="kw">for</span> e <span class="kw">in</span> logs[-<span class="nu">10</span>:])
+
+<span class="kw">if</span> name == <span class="st">"execute_script"</span>:
+    result = driver.<span class="fn">execute_script</span>(<span class="st">f"return </span>{inputs[<span class="st">'expression'</span>]}<span class="st">"</span>)
+    <span class="kw">return</span> <span class="fn">str</span>(result)</pre>
+    </div>
+  </div>
+</section>
+
+<!-- 07 BROWSER SETUP CHROME -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">agent.py · Browser Setup</div>
+    <h2 class="st">Chrome and Firefox —<br><em>one function, one flag.</em></h2>
+    <div class="code-card" style="flex:1">
+      <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">agent.py — _build_driver()</div></div>
+      <pre><span class="kw">def</span> <span class="fn">_build_driver</span>(browser: <span class="tp">str</span>, headless: <span class="tp">bool</span>):
+    <span class="kw">if</span> browser == <span class="st">"chrome"</span>:
+        options = webdriver.<span class="fn">ChromeOptions</span>()
+        options.<span class="fn">set_capability</span>(<span class="st">"goog:loggingPrefs"</span>, { <span class="st">"browser"</span>: <span class="st">"ALL"</span> })
+        <span class="cm"># ↑ MUST be set before driver starts — cannot add later</span>
+        <span class="kw">if</span> headless: options.<span class="fn">add_argument</span>(<span class="st">"--headless=new"</span>)
+        <span class="kw">return</span> webdriver.<span class="fn">Chrome</span>(
+            service=<span class="fn">ChromeService</span>(<span class="fn">ChromeDriverManager</span>().<span class="fn">install</span>()),
+            options=options
+        )
+
+    <span class="kw">if</span> browser == <span class="st">"firefox"</span>:
+        options = webdriver.<span class="fn">FirefoxOptions</span>()
+        options.<span class="fn">set_capability</span>(<span class="st">"webSocketUrl"</span>, <span class="nu">True</span>)    <span class="cm"># BiDi transport</span>
+        options.<span class="fn">set_preference</span>(<span class="st">"remote.active-protocols"</span>, <span class="nu">3</span>) <span class="cm"># Classic + BiDi</span>
+        <span class="kw">if</span> headless: options.<span class="fn">add_argument</span>(<span class="st">"--headless"</span>)
+        <span class="kw">return</span> webdriver.<span class="fn">Firefox</span>(
+            service=<span class="fn">FirefoxService</span>(<span class="fn">GeckoDriverManager</span>().<span class="fn">install</span>()),
+            options=options
+        )</pre>
+    </div>
+    <div class="tip" style="margin-top:12px">
+      <div class="tip-lbl">Chrome logging must be set at startup</div>
+      <p><code style="font-family:var(--font-m);font-size:12px">goog:loggingPrefs</code> cannot be added after the driver starts. Without it, <code style="font-family:var(--font-m);font-size:12px">get_browser_logs</code> silently returns nothing.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 08 TYPESCRIPT -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">TypeScript</div>
+    <h2 class="st">Builder API,<br><em>same BiDi setup.</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">tools.ts — Chrome</div></div>
+        <pre><span class="kw">import</span> { logging } <span class="kw">from</span> <span class="st">"selenium-webdriver"</span>;
+<span class="kw">import</span> * <span class="kw">as</span> chrome <span class="kw">from</span> <span class="st">"selenium-webdriver/chrome"</span>;
+
+<span class="kw">const</span> prefs = <span class="kw">new</span> logging.<span class="fn">Preferences</span>();
+prefs.<span class="fn">setLevel</span>(logging.Type.BROWSER, logging.Level.ALL);
+
+<span class="kw">const</span> options = <span class="kw">new</span> chrome.<span class="fn">Options</span>()
+    .<span class="fn">windowSize</span>({ width: <span class="nu">1280</span>, height: <span class="nu">800</span> })
+    .<span class="fn">setLoggingPrefs</span>(prefs);
+
+<span class="kw">if</span> (headless) options.<span class="fn">addArguments</span>(<span class="st">"--headless=new"</span>);
+
+<span class="kw">return new</span> Builder()
+    .<span class="fn">forBrowser</span>(<span class="st">"chrome"</span>)
+    .<span class="fn">setChromeOptions</span>(options)
+    .<span class="fn">build</span>();</pre>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">tools.ts — Firefox</div></div>
+        <pre><span class="kw">import</span> * <span class="kw">as</span> firefox <span class="kw">from</span> <span class="st">"selenium-webdriver/firefox"</span>;
+
+<span class="kw">const</span> options = <span class="kw">new</span> firefox.<span class="fn">Options</span>();
+options.<span class="fn">setPreference</span>(<span class="st">"remote.active-protocols"</span>, <span class="nu">3</span>);
+<span class="kw">if</span> (headless) options.<span class="fn">addArguments</span>(<span class="st">"--headless"</span>);
+
+<span class="kw">return new</span> Builder()
+    .<span class="fn">forBrowser</span>(<span class="st">"firefox"</span>)
+    .<span class="fn">setFirefoxOptions</span>(options)
+    .<span class="fn">build</span>();
+
+<span class="cm">// npm run start         → Chrome
+// npm run start:firefox → Firefox</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 09 LIVE DEMO -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Live Demo</div>
+    <h2 class="st">BiDi tools<br><em>in action.</em></h2>
+    <div class="code-card" style="flex:1">
+      <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">terminal — python run.py</div></div>
+      <pre>  → <span class="fn">navigate</span>({<span class="st">"url"</span>: <span class="st">"https://demo.playwright.dev/todomvc"</span>})
+     Navigated to https://demo.playwright.dev/todomvc
+  → <span class="fn">get_browser_logs</span>({})
+     No browser logs.           <span class="cm"># ← clean page load</span>
+  → <span class="fn">fill</span>({<span class="st">"label"</span>: <span class="st">"What needs to be done?"</span>, <span class="st">"value"</span>: <span class="st">"Buy groceries"</span>})
+     Filled with <span class="st">'Buy groceries'</span>
+  <span class="cm">... 15 more tool calls ...</span>
+  → <span class="fn">execute_script</span>({<span class="st">"expression"</span>:
+     <span class="st">"document.querySelectorAll('.todo-list li').length"</span>})
+     3                          <span class="cm"># ← JS count verification</span>
+  → <span class="fn">assert_visible</span>({<span class="st">"role"</span>: <span class="st">"listitem"</span>, <span class="st">"text"</span>: <span class="st">"Buy groceries"</span>})
+     VISIBLE: listitem <span class="st">'Buy groceries'</span>
+
+Agent: <span class="st">PASS — All 7 steps completed successfully.</span>
+
+<span class="cm">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+<span class="cm"># Same run — Firefox</span>
+<span class="cm"># python run.py firefox → same output, different browser</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- 10 KEY TAKEAWAYS -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Module 04 · Key Takeaways</div>
+    <h2 class="st">Five things<br><em>to carry forward.</em></h2>
+    <div style="flex:1">
+      <div class="take-row"><div class="take-n">1</div><div><div class="take-title">XPath union covers both semantic HTML and explicit ARIA</div><div class="take-sub"><code style="font-family:var(--font-m);font-size:13px">//button[...]</code> catches <code style="font-family:var(--font-m);font-size:13px">&lt;button&gt;</code> elements. <code style="font-family:var(--font-m);font-size:13px">| //*[@role='button'][...]</code> catches component libraries that use div + ARIA. Together: everything.</div></div></div>
+      <div class="take-row"><div class="take-n">2</div><div><div class="take-title">goog:loggingPrefs must be set before the driver starts</div><div class="take-sub">Pass it in ChromeOptions before calling webdriver.Chrome(). Can't be added later. Without it, get_browser_logs silently returns nothing.</div></div></div>
+      <div class="take-row"><div class="take-n">3</div><div><div class="take-title">Cross-browser is one command-line flag</div><div class="take-sub">python run.py firefox. In CI, run both as parallel jobs. Use fail-fast: false in your matrix so both finish reporting even if one fails.</div></div></div>
+      <div class="take-row"><div class="take-n">4</div><div><div class="take-title">execute_script fills the gap for non-accessible state</div><div class="take-sub">localStorage, canvas, computed properties, event tracking — anything JavaScript can read, the agent can verify.</div></div></div>
+      <div class="take-row"><div class="take-n">5</div><div><div class="take-title">intercept_network is Chrome/CDP only</div><div class="take-sub">On Firefox the agent receives a FAIL and should skip gracefully. Add "skip network interception on Firefox" to the system prompt.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 EVAL CHECKPOINT -->
+<section class="slide">
+  <div class="si">
+    <div style="font-family:var(--font-m);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);margin-bottom:20px">eval checkpoint</div>
+    <h2 style="font-family:var(--font-d);font-size:clamp(28px,3vw,44px);margin-bottom:24px">Eval Your <em>Selenium BiDi Agent</em></h2>
+    <p style="color:var(--fg-2);margin-bottom:24px">BiDi gives you two eval angles that Playwright can't match:</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+      <div class="card" style="padding:24px">
+        <div style="font-family:var(--font-m);font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);margin-bottom:12px">Cross-browser consistency</div>
+        <p style="font-size:14px;color:var(--fg-2);line-height:1.6">Run the same golden scenario on Chrome and Firefox. Compare findings with deterministic judge. A delta &gt; 20% keyword coverage between browsers = a real portability bug.</p>
+      </div>
+      <div class="card" style="padding:24px">
+        <div style="font-family:var(--font-m);font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);margin-bottom:12px">Log capture coverage</div>
+        <p style="font-size:14px;color:var(--fg-2);line-height:1.6">For scenarios that trigger JS errors, verify <code style="font-family:var(--font-m);background:rgba(255,255,255,0.08);padding:2px 5px;border-radius:4px">get_browser_logs</code> appears in the tool call sequence and the finding mentions the console error.</p>
+      </div>
+    </div>
+    <div class="tip">Cross-browser consistency eval is free — you already have two drivers. Add it to every scenario that touches form submission or dynamic content.</div>
+  </div>
+</section>
+
+<!-- 12 NEXT -->
+<section class="slide s-next">
+  <div class="si">
+    <div style="text-align:center;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px">
+      <div class="next-label">Up next</div>
+      <div class="next-arr">→</div>
+      <div class="next-title">Module 05: <em>Multi-Agent Orchestration</em></div>
+      <div class="next-sub" style="max-width:500px">Stop running one task at a time. An orchestrator plans a test suite, dispatches five parallel runners — each with its own browser — and collects structured results.</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:8px">
+        <span class="pill">tool_choice forced output</span>
+        <span class="pill">ThreadPoolExecutor</span>
+        <span class="pill">Promise.all</span>
+        <span class="pill">Isolated browsers</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+<button class="nav-btn prev dim" id="prevBtn">←</button>
+<button class="nav-btn next" id="nextBtn">→</button>
+<script>
+const slides=document.querySelectorAll('.slide'),total=slides.length;let cur=0;
+function show(n){slides[cur].classList.remove('active');cur=Math.max(0,Math.min(n,total-1));slides[cur].classList.add('active');document.getElementById('sn').textContent=`${cur+1} / ${total}`;document.getElementById('pf').style.width=`${((cur+1)/total)*100}%`;document.getElementById('prevBtn').classList.toggle('dim',cur===0);document.getElementById('nextBtn').classList.toggle('dim',cur===total-1);}
+function next(){show(cur+1);}function prev(){show(cur-1);}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){e.preventDefault();next();}if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();prev();}if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}});
+document.getElementById('deck').addEventListener('click',e=>{if(!e.target.closest('.nav-btn'))next();});
+document.getElementById('prevBtn').addEventListener('click',e=>{e.stopPropagation();prev();});
+document.getElementById('nextBtn').addEventListener('click',e=>{e.stopPropagation();next();});
+</script>
+</body>
+</html>

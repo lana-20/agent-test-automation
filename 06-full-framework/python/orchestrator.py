@@ -18,7 +18,7 @@ def execute(spec: str, headless: bool = True) -> TestReport:
 
     results = []
 
-    with ThreadPoolExecutor(max_workers=max(len(high), 1)) as pool:
+    with ThreadPoolExecutor(max_workers=min(max(len(high), 1), 3)) as pool:
         futures = {pool.submit(run, s, headless): s for s in high}
         for future in as_completed(futures):
             results.append(future.result())
@@ -33,7 +33,7 @@ def execute(spec: str, headless: bool = True) -> TestReport:
     else:
         if rest:
             print(f"\n[Orchestrator] Running {len(rest)} remaining scenario(s)...")
-            with ThreadPoolExecutor(max_workers=len(rest)) as pool:
+            with ThreadPoolExecutor(max_workers=min(len(rest), 3)) as pool:
                 futures = {pool.submit(run, s, headless): s for s in rest}
                 for future in as_completed(futures):
                     results.append(future.result())

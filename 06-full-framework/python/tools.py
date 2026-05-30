@@ -12,14 +12,26 @@ TOOL_DEFINITIONS = [
     },
     {
         "name": "click",
-        "description": "Click an element by ARIA role and visible text.",
+        "description": "Click an element. Use selector (CSS) for reliability, or role+text as ARIA locator.",
         "input_schema": {
             "type": "object",
             "properties": {
+                "selector": {"type": "string", "description": "CSS selector (preferred)"},
                 "role": {"type": "string"},
                 "text": {"type": "string"},
             },
-            "required": ["role", "text"],
+        },
+    },
+    {
+        "name": "hover",
+        "description": "Hover over an element to reveal hidden controls (e.g. delete buttons). Use selector (CSS) or role+text.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "selector": {"type": "string", "description": "CSS selector (preferred)"},
+                "role": {"type": "string"},
+                "text": {"type": "string"},
+            },
         },
     },
     {
@@ -35,39 +47,51 @@ TOOL_DEFINITIONS = [
         },
     },
     {
-        "name": "assert_visible",
-        "description": "Assert that an element with given role and text is visible.",
+        "name": "press",
+        "description": "Press a keyboard key on the focused element or a specific selector. Common keys: Enter, Tab, Escape.",
         "input_schema": {
             "type": "object",
             "properties": {
+                "key":      {"type": "string", "description": "e.g. 'Enter', 'Tab', 'Escape'"},
+                "selector": {"type": "string", "description": "CSS selector to focus first (optional)"},
+            },
+            "required": ["key"],
+        },
+    },
+    {
+        "name": "assert_visible",
+        "description": "Assert an element is visible. Use selector (CSS) for reliability, or role+text as ARIA locator.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "selector": {"type": "string", "description": "CSS selector (preferred)"},
                 "role": {"type": "string"},
                 "text": {"type": "string"},
             },
-            "required": ["role", "text"],
         },
     },
     {
         "name": "assert_not_visible",
-        "description": "Assert that an element with given role and text is NOT visible.",
+        "description": "Assert an element is NOT visible. Use selector (CSS) or role+text.",
         "input_schema": {
             "type": "object",
             "properties": {
+                "selector": {"type": "string", "description": "CSS selector (preferred)"},
                 "role": {"type": "string"},
                 "text": {"type": "string"},
             },
-            "required": ["role", "text"],
         },
     },
     {
         "name": "get_text",
-        "description": "Return the inner text of an element by role and text.",
+        "description": "Return the inner text of an element. Prefer selector (CSS) for reliability; role+text as alternative.",
         "input_schema": {
             "type": "object",
             "properties": {
+                "selector": {"type": "string", "description": "CSS selector (preferred)"},
                 "role": {"type": "string"},
                 "text": {"type": "string"},
             },
-            "required": ["role", "text"],
         },
     },
     {
@@ -110,8 +134,22 @@ def dispatch(name: str, inputs: dict, page: Page) -> str:
         return f"Navigated to {inputs['url']}"
 
     if name == "click":
-        page.get_by_role(inputs["role"], name=inputs["text"]).click()
-        return f"Clicked {inputs['role']} '{inputs['text']}'"
+        sel, role, text = inputs.get("selector"), inputs.get("role"), inputs.get("text")
+        loc = page.locator(sel) if sel else page.get_by_role(role, name=text)  # type: ignore[arg-type]
+        try:
+            loc.first.click(timeout=5000)
+            return f"Clicked selector={sel} role={role} text={text}"
+        except PlaywrightTimeout:
+            return f"TIMEOUT: element not found or not clickable — selector={sel} role={role} text={text}"
+
+    if name == "hover":
+        sel, role, text = inputs.get("selector"), inputs.get("role"), inputs.get("text")
+        loc = page.locator(sel) if sel else page.get_by_role(role, name=text)  # type: ignore[arg-type]
+        try:
+            loc.first.hover(timeout=5000)
+            return f"Hovered selector={sel} role={role} text={text}"
+        except PlaywrightTimeout:
+            return f"TIMEOUT: element not found or not visible — selector={sel} role={role} text={text}"
 
     if name == "fill":
         label = inputs["label"]
@@ -123,23 +161,30 @@ def dispatch(name: str, inputs: dict, page: Page) -> str:
         return f"Filled '{label}' with '{value}'"
 
     if name == "assert_visible":
-        loc = page.get_by_role(inputs["role"], name=inputs["text"])
+        sel, role, text = inputs.get("selector"), inputs.get("role"), inputs.get("text")
+        loc = page.locator(sel) if sel else page.get_by_role(role, name=text)  # type: ignore[arg-type]
         try:
-            loc.wait_for(state="visible", timeout=5000)
-            return f"VISIBLE: {inputs['role']} '{inputs['text']}'"
+            loc.first.wait_for(state="visible", timeout=5000)
+            return f"VISIBLE: selector={sel} role={role} text={text}"
         except PlaywrightTimeout:
-            return f"FAIL: {inputs['role']} '{inputs['text']}' not visible"
+            return f"FAIL: not visible — selector={sel} role={role} text={text}"
 
     if name == "assert_not_visible":
-        loc = page.get_by_role(inputs["role"], name=inputs["text"])
+        sel, role, text = inputs.get("selector"), inputs.get("role"), inputs.get("text")
+        loc = page.locator(sel) if sel else page.get_by_role(role, name=text)  # type: ignore[arg-type]
         try:
-            loc.wait_for(state="hidden", timeout=3000)
-            return f"HIDDEN: {inputs['role']} '{inputs['text']}'"
+            loc.first.wait_for(state="hidden", timeout=3000)
+            return f"HIDDEN: selector={sel} role={role} text={text}"
         except PlaywrightTimeout:
-            return f"FAIL: {inputs['role']} '{inputs['text']}' is still visible"
+            return f"FAIL: still visible — selector={sel} role={role} text={text}"
 
     if name == "get_text":
-        return page.get_by_role(inputs["role"], name=inputs["text"]).inner_text()
+        sel, role, text = inputs.get("selector"), inputs.get("role"), inputs.get("text")
+        loc = page.locator(sel) if sel else page.get_by_role(role, name=text)  # type: ignore[arg-type]
+        try:
+            return loc.first.inner_text(timeout=5000)
+        except PlaywrightTimeout:
+            return f"TIMEOUT: element not found or not visible — selector={sel} role={role} text={text}"
 
     if name == "get_title":
         return page.title()
@@ -150,6 +195,15 @@ def dispatch(name: str, inputs: dict, page: Page) -> str:
     if name == "screenshot":
         page.screenshot(path=inputs["path"])
         return f"Screenshot saved to {inputs['path']}"
+
+    if name == "press":
+        key = inputs["key"]
+        selector = inputs.get("selector")
+        if selector:
+            page.locator(selector).press(key)
+        else:
+            page.keyboard.press(key)
+        return f"Pressed: {key}"
 
     if name == "count_elements":
         text = inputs.get("text")

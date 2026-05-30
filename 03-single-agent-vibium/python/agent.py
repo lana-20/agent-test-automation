@@ -60,6 +60,6 @@ def run(task: str, headless: bool = False) -> list[dict]:
             if response.stop_reason == "end_turn":
                 break
     finally:
-        bro.close()
+        bro.stop()
 
     return log

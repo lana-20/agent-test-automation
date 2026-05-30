@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Module 01 — Foundations · Agent-Driven Test Automation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1a2a;--bg-dark:#0a1220;--card:#13243a;--card-dark:#0d1e30;
+  --off-white:#f5f0eb;--coral:#d4552a;--coral-light:#e8785a;--coral-dark:#a83e1e;
+  --mint:#4aa8a5;--mint-light:#9dbfb8;--gold:#b8862a;--gold-light:#d4a85a;
+  --violet:#7455bf;--violet-light:#9e85d4;--steel:#3d6abf;--steel-light:#7298d4;
+  --border:rgba(255,255,255,0.08);--border-mid:rgba(255,255,255,0.14);
+  --fg-2:rgba(245,240,235,0.65);--fg-3:rgba(245,240,235,0.38);
+  --accent:var(--coral);
+  --font-d:'Playfair Display',Georgia,serif;
+  --font-b:'Inter',-apple-system,sans-serif;
+  --font-m:'JetBrains Mono',monospace;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg-dark);color:var(--off-white)}
+body{font-family:var(--font-b)}
+
+/* ── Progress ── */
+.progress{position:fixed;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.07);z-index:200}
+.progress-fill{height:100%;background:var(--accent);transition:width .35s ease;width:6.67%}
+
+/* ── Deck header ── */
+.deck-hdr{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:16px 48px 0;z-index:199;pointer-events:none}
+.module-tag{font-family:var(--font-m);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-3)}
+.slide-num{font-family:var(--font-m);font-size:11px;color:var(--fg-3)}
+
+/* ── Slides ── */
+.deck{width:100vw;height:100vh;position:relative}
+.slide{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .28s;overflow:hidden}
+.slide.active{opacity:1;pointer-events:all}
+.si{height:100%;display:flex;flex-direction:column;padding:72px 100px 76px;max-width:1480px;margin:0 auto}
+
+/* ── Nav buttons ── */
+.nav-btn{position:fixed;bottom:28px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--fg-2);border-radius:50%;width:42px;height:42px;font-size:17px;cursor:pointer;transition:all .2s;z-index:200;display:flex;align-items:center;justify-content:center;user-select:none}
+.nav-btn:hover{background:rgba(255,255,255,0.11);color:var(--off-white);border-color:var(--border-mid)}
+.nav-btn.prev{left:36px}
+.nav-btn.next{right:36px}
+.nav-btn.dim{opacity:.28;pointer-events:none}
+
+/* ── Fullscreen hint ── */
+.hint{position:fixed;bottom:34px;left:50%;transform:translateX(-50%);font-family:var(--font-m);font-size:10px;letter-spacing:.18em;color:var(--fg-3);text-transform:uppercase;pointer-events:none;z-index:200}
+
+/* ── Typography ── */
+.eyebrow{font-family:var(--font-m);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;opacity:.9}
+h2.st{font-family:var(--font-d);font-size:clamp(30px,3.2vw,48px);line-height:1.1;letter-spacing:-.02em;margin-bottom:32px}
+h2.st em{font-style:italic;color:var(--accent)}
+h3.sst{font-family:var(--font-d);font-size:clamp(20px,2vw,28px);line-height:1.2;margin-bottom:12px}
+h3.sst em{font-style:italic;color:var(--accent)}
+.sbody{font-size:17px;line-height:1.65;color:var(--fg-2);max-width:780px}
+.sbody strong{color:var(--off-white)}
+
+/* ── Lists ── */
+.pts{list-style:none;margin-top:4px}
+.pts li{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;font-size:17px;line-height:1.5;color:var(--fg-2)}
+.pts li::before{content:'—';color:var(--accent);font-weight:600;flex-shrink:0;margin-top:1px}
+.pts li strong{color:var(--off-white)}
+.pts.lg li{font-size:19px;margin-bottom:20px}
+
+/* ── Code block ── */
+.code-card{background:var(--card-dark);border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0}
+.code-top{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px}
+.dot{width:11px;height:11px;border-radius:50%}
+.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+.code-lbl{margin-left:auto;font-family:var(--font-m);font-size:10.5px;color:var(--fg-3);letter-spacing:.1em}
+pre{padding:22px 26px;font-family:var(--font-m);font-size:13.5px;line-height:1.75;overflow-x:auto;white-space:pre}
+.kw{color:#e8785a}.fn{color:#7298d4}.st{color:#9dbfb8}.cm{color:rgba(245,240,235,.32);font-style:italic}
+.tp{color:#9e85d4}.nu{color:#d4a85a}.op{color:var(--fg-2)}.ky{color:#e8785a}
+
+/* ── Table ── */
+.tbl-wrap{overflow:auto;flex:1}
+.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th{font-family:var(--font-m);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-3);padding:11px 16px;border-bottom:1px solid var(--border-mid);text-align:left;white-space:nowrap}
+.tbl td{padding:12px 16px;border-bottom:1px solid var(--border);color:var(--fg-2);vertical-align:top;line-height:1.4}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:nth-child(even) td{background:rgba(255,255,255,0.02)}
+.yes{color:#4aa8a5;font-weight:600}.no{color:var(--fg-3)}.hi{color:var(--off-white);font-weight:600}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-family:var(--font-m);font-size:11px}
+.badge-c{background:rgba(212,85,42,.15);color:#e8785a}
+.badge-m{background:rgba(74,168,165,.15);color:#9dbfb8}
+.badge-s{background:rgba(61,106,191,.15);color:#7298d4}
+
+/* ── Diagram ── */
+.diag{display:flex;align-items:center;gap:0;flex:1}
+.dbox{background:var(--card);border:1px solid var(--border-mid);border-radius:8px;padding:18px 22px;text-align:center;font-size:15px;color:var(--off-white);font-weight:500;flex-shrink:0}
+.dbox.acc{border-color:var(--accent);background:rgba(212,85,42,.08);color:var(--off-white)}
+.dbox.sm{padding:12px 16px;font-size:13px}
+.dbox-lbl{font-family:var(--font-m);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--fg-3);margin-bottom:6px}
+.darr{color:var(--fg-3);font-size:20px;padding:0 12px;flex-shrink:0}
+.darr-v{color:var(--fg-3);font-size:20px;padding:6px 0;text-align:center}
+
+/* ── Loop diagram ── */
+.loop-ring{display:flex;flex-direction:column;align-items:center;gap:0;margin:0 auto}
+.loop-row{display:flex;align-items:center;gap:0}
+.lnode{background:var(--card);border:1px solid var(--border-mid);border-radius:8px;padding:16px 32px;font-size:16px;font-weight:500;min-width:140px;text-align:center}
+.lnode.acc{border-color:var(--accent);background:rgba(212,85,42,.1)}
+.larr-h{color:var(--fg-3);font-size:22px;padding:0 16px}
+.larr-v{color:var(--fg-3);font-size:22px;padding:10px 0;text-align:center}
+
+/* ── Grid layouts ── */
+.cols-2{display:grid;grid-template-columns:1fr 1fr;gap:36px;flex:1}
+.cols-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:28px;flex:1}
+.col-6040{display:grid;grid-template-columns:60fr 40fr;gap:40px;flex:1}
+.col-4060{display:grid;grid-template-columns:40fr 60fr;gap:40px;flex:1}
+.col-5050{display:grid;grid-template-columns:1fr 1fr;gap:40px;flex:1}
+
+/* ── Vocabulary card ── */
+.vocab-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:28px 28px 24px;display:flex;flex-direction:column;gap:10px}
+.vocab-term{font-family:var(--font-m);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent)}
+.vocab-def{font-size:16px;color:var(--fg-2);line-height:1.55}
+.vocab-def strong{color:var(--off-white)}
+
+/* ── Tip card ── */
+.tip{background:rgba(212,85,42,.07);border:1px solid rgba(212,85,42,.28);border-radius:8px;padding:16px 20px;margin-top:auto}
+.tip-lbl{font-family:var(--font-m);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--accent);margin-bottom:7px}
+.tip p{font-size:15px;color:var(--fg-2);line-height:1.5}
+.tip p strong{color:var(--off-white)}
+
+/* ── Takeaway ── */
+.take-row{display:flex;gap:18px;align-items:flex-start;margin-bottom:20px}
+.take-n{font-family:var(--font-d);font-size:48px;font-weight:400;color:var(--accent);opacity:.22;line-height:.9;flex-shrink:0;width:48px}
+.take-body{padding-top:2px}
+.take-title{font-size:17px;font-weight:600;color:var(--off-white);margin-bottom:4px}
+.take-sub{font-size:15px;color:var(--fg-2);line-height:1.5}
+
+/* ── Module map ── */
+.mod-list{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;flex:1;align-content:start}
+.mod-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px;transition:border-color .2s}
+.mod-card.curr{border-color:var(--accent);background:rgba(212,85,42,.07)}
+.mod-num{font-family:var(--font-m);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-3);margin-bottom:6px}
+.mod-num.curr{color:var(--accent)}
+.mod-title{font-size:14px;font-weight:600;color:var(--off-white);margin-bottom:4px}
+.mod-desc{font-size:12.5px;color:var(--fg-3);line-height:1.4}
+
+/* ── Messages visual ── */
+.msg-thread{display:flex;flex-direction:column;gap:10px;overflow:hidden}
+.msg{padding:12px 16px;border-radius:8px;font-family:var(--font-m);font-size:13px;line-height:1.4}
+.msg.user{background:rgba(61,106,191,.15);border:1px solid rgba(61,106,191,.25);color:#7298d4;align-self:flex-start;max-width:75%}
+.msg.asst{background:rgba(212,85,42,.1);border:1px solid rgba(212,85,42,.22);color:#e8785a;align-self:flex-end;max-width:80%}
+.msg.tool{background:rgba(74,168,165,.1);border:1px solid rgba(74,168,165,.22);color:#9dbfb8;align-self:flex-start;max-width:70%;font-size:12px}
+.msg-role{font-size:9px;letter-spacing:.18em;text-transform:uppercase;opacity:.6;margin-bottom:4px}
+.msg-ellipsis{color:var(--fg-3);text-align:center;font-size:20px;letter-spacing:4px;padding:4px 0}
+
+/* ── Title slide ── */
+.s-title .si{align-items:center;justify-content:center;text-align:center}
+.title-bg-num{font-family:var(--font-d);font-size:240px;font-weight:400;color:var(--accent);opacity:.045;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;line-height:1;user-select:none}
+.course-label{font-family:var(--font-m);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--fg-3);margin-bottom:28px}
+.title-module{font-family:var(--font-m);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;opacity:.9}
+.title-h1{font-family:var(--font-d);font-size:clamp(40px,5vw,68px);line-height:1.05;letter-spacing:-.03em;margin-bottom:20px}
+.title-h1 em{font-style:italic;color:var(--accent)}
+.title-sub{font-size:17px;color:var(--fg-2);margin-bottom:40px}
+.title-pills{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.pill{font-family:var(--font-m);font-size:11px;letter-spacing:.14em;padding:6px 14px;border:1px solid var(--border-mid);border-radius:999px;color:var(--fg-2)}
+
+/* ── Next slide ── */
+.s-next .si{align-items:center;justify-content:center}
+.next-arr{font-family:var(--font-d);font-size:80px;color:var(--accent);opacity:.2;text-align:center;margin-bottom:0}
+.next-label{font-family:var(--font-m);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--fg-3);text-align:center;margin-bottom:16px}
+.next-title{font-family:var(--font-d);font-size:32px;text-align:center;margin-bottom:8px}
+.next-title em{font-style:italic;color:var(--accent)}
+.next-sub{font-size:15px;color:var(--fg-2);text-align:center}
+
+/* ── Done slide ── */
+.checkmark{font-size:64px;margin-bottom:20px;filter:drop-shadow(0 0 20px rgba(212,85,42,.5))}
+</style>
+</head>
+<body>
+<div class="progress"><div class="progress-fill" id="pf"></div></div>
+<div class="deck-hdr">
+  <span class="module-tag">Module 01 · Foundations</span>
+  <span class="slide-num" id="sn">1 / 15</span>
+</div>
+
+<div class="deck" id="deck">
+
+<!-- ─────────────────── 01 TITLE ─────────────────── -->
+<section class="slide s-title active">
+  <div class="title-bg-num">01</div>
+  <div class="si">
+    <div class="course-label">Agent-Driven Test Automation</div>
+    <div class="title-module">Module 01</div>
+    <h1 class="title-h1">Foundations</h1>
+    <p class="title-sub">What an agent is, how the loop works, and why it matters.</p>
+    <div class="title-pills">
+      <span class="pill">7 modules</span>
+      <span class="pill">Python &amp; TypeScript</span>
+      <span class="pill">3 browser drivers</span>
+      <span class="pill">~28 min</span>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────── 02 COURSE MAP ─────────────────── -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Course Overview</div>
+    <h2 class="st">Eight modules,<br><em>one complete skill.</em></h2>
+    <div class="mod-list">
+      <div class="mod-card curr">
+        <div class="mod-num curr">Module 01</div>
+        <div class="mod-title">Foundations</div>
+        <div class="mod-desc">Agent loop, tools, vocabulary</div>
+      </div>
+      <div class="mod-card">
+        <div class="mod-num">Module 02</div>
+        <div class="mod-title">Playwright</div>
+        <div class="mod-desc">First working agent, Python + TS</div>
+      </div>
+      <div class="mod-card">
+        <div class="mod-num">Module 03</div>
+        <div class="mod-title">Vibium</div>
+        <div class="mod-desc">Same loop, different driver + MCP</div>
+      </div>
+      <div class="mod-card">
+        <div class="mod-num">Module 04</div>
+        <div class="mod-title">Selenium BiDi</div>
+        <div class="mod-desc">Chrome + Firefox, console &amp; network</div>
+      </div>
+      <div class="mod-card">
+        <div class="mod-num">Module 05</div>
+        <div class="mod-title">Multi-Agent</div>
+        <div class="mod-desc">Orchestrator + parallel runners</div>
+      </div>
+      <div class="mod-card">
+        <div class="mod-num">Module 06</div>
+        <div class="mod-title">Full Framework</div>
+        <div class="mod-desc">4 specialists: Architect→Asserter→Reporter</div>
+      </div>
+      <div class="mod-card">
+        <div class="mod-num">Module 07</div>
+        <div class="mod-title">CI/CD</div>
+        <div class="mod-desc">GitHub Actions, secrets, artifacts</div>
+      </div>
+      <div class="mod-card">
+        <div class="mod-num">Module 08</div>
+        <div class="mod-title">Evaluations</div>
+        <div class="mod-desc">Golden dataset, 3 judges, regression gate</div>
+      </div>
+    </div>
+    <div class="tip" style="margin-top:20px">
+      <div class="tip-lbl">Core principle</div>
+      <p>The agent loop you write in Module 02 doesn't change in Module 06. <strong>One mental model. Eight applications.</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────── 03 THE PROBLEM ─────────────────── -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">The Problem</div>
+    <h2 class="st">Scripted tests are<br><em>brittle by design.</em></h2>
+    <div class="cols-2" style="align-items:start;gap:32px">
+      <div>
+        <h3 class="sst" style="margin-bottom:18px">What breaks</h3>
+        <ul class="pts">
+          <li><strong>Hard-coded selectors</strong> — a renamed CSS class breaks the test</li>
+          <li><strong>Positional locators</strong> — <code style="font-family:var(--font-m);font-size:13px;color:var(--mint-light)">.todo-list li:nth-child(2)</code> fails when order changes</li>
+          <li><strong>No memory</strong> — a script doesn't know what happened two steps ago</li>
+          <li><strong>Coverage gaps</strong> — writing scripted tests takes time; edge cases get skipped</li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="sst" style="margin-bottom:18px">What agents offer</h3>
+        <ul class="pts">
+          <li><strong>Goal-oriented</strong> — describe what to verify, not how</li>
+          <li><strong>ARIA-based locators</strong> — resilient to layout and styling changes</li>
+          <li><strong>Full context</strong> — the messages array is the agent's memory</li>
+          <li><strong>Exploratory coverage</strong> — the model reasons about what to check</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────── 04 WHAT IS AN AGENT ─────────────────── -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Core Concept</div>
+    <h2 class="st">A test agent <em>reasons</em><br>its way through a task.</h2>
+    <p class="sbody" style="margin-bottom:32px">Instead of specifying every step, you give the agent a <strong>goal</strong>. The model decides what actions to take, verifies results, and adapts when something unexpected happens.</p>
+    <div class="code-card" style="max-width:680px">
+      <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">task description</div></div>
+      <pre><span class="cm">-- Scripted test (you specify every step)</span>
+await page.locator(<span class="st">'#todo-input'</span>).fill(<span class="st">'Buy groceries'</span>)
+await page.locator(<span class="st">'.add-btn'</span>).click()
+await page.locator(<span class="st">'.todo-list li:nth-child(1)'</span>).click()
+
+<span class="cm">-- Agent task (you describe the goal)</span>
+<span class="st">"Go to TodoMVC, add 3 todos, mark one complete,
+ verify the filter shows only that item."</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────── 05 AGENT LOOP ─────────────────── -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">The Agent Loop</div>
+    <h2 class="st">Observe. Decide. Act.<br><em>Repeat.</em></h2>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0;width:520px">
+        <div class="dbox acc" style="width:200px;padding:18px 24px;font-size:17px;margin-bottom:0">
+          <div class="dbox-lbl">Goal</div>
+          <div>Test the checkout flow</div>
+        </div>
+        <div class="darr-v">↓</div>
+        <div style="display:flex;align-items:center;gap:0;width:100%;justify-content:center">
+          <div class="dbox" style="padding:18px 24px;font-size:16px;flex:1;text-align:center">
+            <div class="dbox-lbl">Step 1</div>
+            OBSERVE
+          </div>
+          <div class="darr">→</div>
+          <div class="dbox" style="padding:18px 24px;font-size:16px;flex:1;text-align:center">
+            <div class="dbox-lbl">Step 2</div>
+            DECIDE
+          </div>
+          <div class="darr">→</div>
+          <div class="dbox" style="padding:18px 24px;font-size:16px;flex:1;text-align:center">
+            <div class="dbox-lbl">Step 3</div>
+            ACT
+          </div>
+        </div>
+        <div style="display:flex;width:100%;justify-content:space-between;padding:0 40px">
+          <div style="color:var(--fg-3);font-size:13px;font-family:var(--font-m);padding:6px 0">↑ tool result</div>
+          <div style="color:var(--fg-3);font-size:13px;font-family:var(--font-m);padding:6px 0">tool call ↓</div>
+        </div>
+        <div class="dbox" style="width:200px;padding:16px 24px;font-size:15px;text-align:center">
+          <div class="dbox-lbl">Until</div>
+          stop_reason = "end_turn"
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────── 06 LOOP IN CODE ─────────────────── -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">The Loop</div>
+    <h2 class="st">Twelve lines<br><em>of meaningful code.</em></h2>
+    <div class="code-card" style="flex:1">
+      <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">pseudo-code</div></div>
+      <pre>messages = [{ <span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: task }]
+
+<span class="kw">while</span> <span class="nu">True</span>:
+    response = model.complete(messages, tools=TOOLS)
+
+    <span class="cm"># append what the model said</span>
+    messages.append({ <span class="st">"role"</span>: <span class="st">"assistant"</span>, <span class="st">"content"</span>: response.content })
+
+    <span class="kw">for</span> block <span class="kw">in</span> response.content:
+        <span class="kw">if</span> block.type == <span class="st">"tool_use"</span>:
+            result = <span class="fn">dispatch</span>(block.name, block.input, page)
+            tool_results.append({ <span class="st">"type"</span>: <span class="st">"tool_result"</span>, <span class="st">"content"</span>: result })
+
+    <span class="kw">if</span> tool_results:
+        messages.append({ <span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: tool_results })
+
+    <span class="kw">if</span> response.stop_reason == <span class="st">"end_turn"</span>:
+        <span class="kw">break</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────── 07 MESSAGES ARRAY ─────────────────── -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Agent Memory</div>
+    <h2 class="st">The messages array<br><em>is the agent's memory.</em></h2>
+    <div class="col-4060" style="align-items:start">
+      <div>
+        <p class="sbody">Every tool call, every result, every decision — it all lives in this growing conversation thread. The model has full context of everything that happened.</p>
+        <div style="margin-top:24px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:8px">
+          <div style="font-family:var(--font-m);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3);margin-bottom:10px">Typical run</div>
+          <div style="font-size:15px;color:var(--fg-2);line-height:1.8">
+            15–25 tool calls<br>
+            ~2,000 tokens<br>
+            1 final report
+          </div>
+        </div>
+      </div>
+      <div class="msg-thread">
+        <div class="msg user"><div class="msg-role">User → Task</div>Go to TodoMVC and test the core workflow...</div>
+        <div class="msg asst"><div class="msg-role">Assistant → Tool call</div>navigate({ url: "https://...todomvc" })</div>
+        <div class="msg tool"><div class="msg-role">Tool result</div>Navigated to https://demo.playwright.dev/todomvc</div>
+        <div class="msg asst"><div class="msg-role">Assistant → Tool call</div>fill({ label: "What needs to be done?", value: "Buy groceries" })</div>
+        <div class="msg tool"><div class="msg-role">Tool result</div>Filled 'What needs to be done?' with 'Buy groceries'</div>
+        <div class="msg-ellipsis">· · ·</div>
+        <div class="msg asst" style="background:rgba(74,168,165,.1);border-color:rgba(74,168,165,.22);color:#9dbfb8"><div class="msg-role">Assistant → End turn</div>PASS — All 7 steps completed successfully.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────── 08 VOCAB: TOOL ─────────────────── -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Core Vocabulary</div>
+    <h2 class="st">A <em>tool</em> is a function<br>the agent can call.</h2>
+    <div class="col-5050" style="align-items:start">
+      <div>
+        <p class="sbody" style="margin-bottom:20px">You define the tools. The model decides <strong>when to call them</strong> and <strong>what arguments to pass</strong>, based on the description field.</p>
+        <ul class="pts">
+          <li><strong>name</strong> — what the model calls it</li>
+          <li><strong>description</strong> — how the model decides when to use it</li>
+          <li><strong>input_schema</strong> — validated JSON schema for the arguments</li>
+        </ul>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">tool definition</div></div>
+        <pre>{
+  <span class="st">"name"</span>: <span class="st">"click"</span>,
+  <span class="st">"description"</span>: <span class="st">"Click an element by
+    ARIA role and visible text."</span>,
+  <span class="st">"input_schema"</span>: {
+    <span class="st">"type"</span>: <span class="st">"object"</span>,
+    <span class="st">"properties"</span>: {
+      <span class="st">"role"</span>: { <span class="st">"type"</span>: <span class="st">"string"</span> },
+      <span class="st">"text"</span>: { <span class="st">"type"</span>: <span class="st">"string"</span> }
+    },
+    <span class="st">"required"</span>: [<span class="st">"role"</span>, <span class="st">"text"</span>]
+  }
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────── 09 VOCAB: TOOL USE / STOP REASON ─────────────────── -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Core Vocabulary</div>
+    <h2 class="st"><em>Tool use</em> and<br>stop reason.</h2>
+    <div class="cols-2" style="align-items:start">
+      <div class="vocab-card">
+        <div class="vocab-term">tool_use</div>
+        <div class="vocab-def">When the model wants to call a tool, the response includes a <strong>tool_use block</strong> with the tool name and chosen arguments.<br><br>Your code executes it and returns a result string.</div>
+        <div class="code-card" style="margin-top:12px">
+          <pre style="font-size:12px;padding:14px 16px">block.type == <span class="st">"tool_use"</span>
+block.name   <span class="cm"># → "click"</span>
+block.input  <span class="cm"># → {"role":"button","text":"Add"}</span></pre>
+        </div>
+      </div>
+      <div class="vocab-card">
+        <div class="vocab-term">stop_reason</div>
+        <div class="vocab-def">Every API response includes a <strong>stop_reason</strong>. It tells you why the model stopped generating.</div>
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px">
+          <div style="padding:12px 14px;background:rgba(212,85,42,.08);border:1px solid rgba(212,85,42,.2);border-radius:6px;font-family:var(--font-m);font-size:13px">
+            <span style="color:var(--coral-light)">"tool_use"</span> — <span style="color:var(--fg-2);font-family:var(--font-b);font-size:13px">execute tools, continue</span>
+          </div>
+          <div style="padding:12px 14px;background:rgba(74,168,165,.08);border:1px solid rgba(74,168,165,.2);border-radius:6px;font-family:var(--font-m);font-size:13px">
+            <span style="color:var(--mint-light)">"end_turn"</span> — <span style="color:var(--fg-2);font-family:var(--font-b);font-size:13px">task complete, break the loop</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────── 10 VOCAB: SYSTEM PROMPT / ORCHESTRATOR ─────────────────── -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Core Vocabulary</div>
+    <h2 class="st"><em>System prompt</em><br>and orchestrator.</h2>
+    <div class="cols-2" style="align-items:start">
+      <div class="vocab-card">
+        <div class="vocab-term">System Prompt</div>
+        <div class="vocab-def">A persistent instruction set that shapes how the agent behaves. Doesn't change during a run. Defines:
+          <ul style="margin-top:10px;padding-left:18px;line-height:1.8;font-size:15px">
+            <li>The agent's persona and role</li>
+            <li>Its rules and constraints</li>
+            <li>The expected output format</li>
+          </ul>
+        </div>
+        <div style="margin-top:14px;padding:12px 14px;background:var(--card-dark);border:1px solid var(--border);border-radius:6px;font-family:var(--font-m);font-size:12.5px;color:var(--fg-2);line-height:1.5">"You are a senior test automation engineer. Work step by step. When an assertion fails, stop and report FAIL with the exact reason."</div>
+      </div>
+      <div class="vocab-card">
+        <div class="vocab-term">Orchestrator</div>
+        <div class="vocab-def">An agent that <strong>coordinates other agents</strong>. In Modules 05 and 06, the orchestrator:
+          <ul style="margin-top:10px;padding-left:18px;line-height:1.8;font-size:15px">
+            <li>Reads a feature description</li>
+            <li>Generates a structured test plan</li>
+            <li>Dispatches runner agents in parallel</li>
+          </ul>
+        </div>
+        <div style="margin-top:14px;padding:12px 14px;background:rgba(116,85,191,.08);border:1px solid rgba(116,85,191,.22);border-radius:6px;font-size:14px;color:var(--fg-2)">The orchestrator plans. Runners execute. <strong>Separation of concerns.</strong></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────── 11 SCRIPTED VS AGENT TABLE ─────────────────── -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Comparison</div>
+    <h2 class="st">Scripted tests vs<br><em>AI agents.</em></h2>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr><th>Dimension</th><th>Scripted Test</th><th>AI Agent</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="hi">How you define work</td><td>Explicit steps</td><td>Goal description</td></tr>
+          <tr><td class="hi">Locator strategy</td><td>CSS / XPath selectors</td><td>ARIA role + visible text</td></tr>
+          <tr><td class="hi">Breakage on DOM change</td><td class="no">Frequent</td><td class="yes">Resilient</td></tr>
+          <tr><td class="hi">Memory across steps</td><td class="no">None</td><td class="yes">Full conversation context</td></tr>
+          <tr><td class="hi">Failure handling</td><td>Exception or silent fail</td><td>Model reasons and reports</td></tr>
+          <tr><td class="hi">Coverage speed</td><td>Slow — each test hand-written</td><td>Fast — goal-based generation</td></tr>
+          <tr><td class="hi">Best for</td><td>Stable critical paths</td><td>Exploratory, fast-changing apps</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip" style="margin-top:16px">
+      <div class="tip-lbl">Use both</div>
+      <p>Agents and scripted tests are complementary. Use scripted tests for stable, high-confidence critical paths. Use agents for coverage you couldn't afford to write by hand.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────── 12 ANATOMY OF A RUN ─────────────────── -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">How It Works</div>
+    <h2 class="st">Anatomy of<br><em>a full agent run.</em></h2>
+    <div class="col-4060" style="align-items:start">
+      <div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--card);border:1px solid var(--border-mid);display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:11px;color:var(--accent);flex-shrink:0">1</div>
+            <div style="font-size:14.5px;color:var(--fg-2)">Task added as user message</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--card);border:1px solid var(--border-mid);display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:11px;color:var(--accent);flex-shrink:0">2</div>
+            <div style="font-size:14.5px;color:var(--fg-2)">Model responds with tool_use</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--card);border:1px solid var(--border-mid);display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:11px;color:var(--accent);flex-shrink:0">3</div>
+            <div style="font-size:14.5px;color:var(--fg-2)">Tool executes in browser</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--card);border:1px solid var(--border-mid);display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:11px;color:var(--accent);flex-shrink:0">4</div>
+            <div style="font-size:14.5px;color:var(--fg-2)">Result appended to messages</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--card);border:1px solid var(--border-mid);display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:11px;color:var(--accent);flex-shrink:0">5</div>
+            <div style="font-size:14.5px;color:var(--fg-2)">Loop repeats 15–25 times</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="width:28px;height:28px;border-radius:50%;background:rgba(74,168,165,.15);border:1px solid rgba(74,168,165,.3);display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:11px;color:var(--mint);flex-shrink:0">✓</div>
+            <div style="font-size:14.5px;color:var(--fg-2)">end_turn → final report → break</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-card" style="flex:1">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">terminal output</div></div>
+        <pre style="font-size:12.5px">  → navigate({<span class="st">"url"</span>: <span class="st">"https://...todomvc"</span>})
+     Navigated to https://...todomvc
+  → fill({<span class="st">"label"</span>: <span class="st">"What needs to be done?"</span>...})
+     Filled with <span class="st">'Buy groceries'</span>
+  → assert_visible({<span class="st">"role"</span>: <span class="st">"listitem"</span>...})
+     VISIBLE: listitem <span class="st">'Buy groceries'</span>
+  → screenshot({<span class="st">"path"</span>: <span class="st">"step2.png"</span>})
+     Screenshot saved to step2.png
+  <span class="cm">... 18 more tool calls ...</span>
+
+Agent: <span class="st">PASS — All 7 steps completed.
+• Navigate to TodoMVC ✓
+• Add 3 todos ✓
+• Verify all 3 visible ✓
+• Mark "Walk the dog" complete ✓
+• Completed filter correct ✓
+• Active filter correct ✓
+• Delete + verify count ✓</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────── 13 KEY TAKEAWAYS ─────────────────── -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Module 01 · Key Takeaways</div>
+    <h2 class="st">Five things<br><em>to carry forward.</em></h2>
+    <div style="flex:1">
+      <div class="take-row">
+        <div class="take-n">1</div>
+        <div class="take-body">
+          <div class="take-title">The loop: observe → decide → act → repeat</div>
+          <div class="take-sub">Messages grow with every tool call. The model has full context. This pattern doesn't change in any module.</div>
+        </div>
+      </div>
+      <div class="take-row">
+        <div class="take-n">2</div>
+        <div class="take-body">
+          <div class="take-title">Tools are the boundary between model and browser</div>
+          <div class="take-sub">You define the tools. The model decides when and how to call them. Your dispatch function executes them.</div>
+        </div>
+      </div>
+      <div class="take-row">
+        <div class="take-n">3</div>
+        <div class="take-body">
+          <div class="take-title">stop_reason tells you when the agent is done</div>
+          <div class="take-sub">"tool_use" → keep going. "end_turn" → break the loop.</div>
+        </div>
+      </div>
+      <div class="take-row">
+        <div class="take-n">4</div>
+        <div class="take-body">
+          <div class="take-title">The system prompt shapes behavior, not the loop</div>
+          <div class="take-sub">Most tuning happens in the system prompt. The loop code stays the same.</div>
+        </div>
+      </div>
+      <div class="take-row">
+        <div class="take-n">5</div>
+        <div class="take-body">
+          <div class="take-title">Agents complement scripted tests — they don't replace them</div>
+          <div class="take-sub">Use agents for exploratory coverage and fast-changing surfaces. Keep scripted tests for stable critical paths.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────── 14 KEYBOARD SHORTCUTS ─────────────────── -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Navigation</div>
+    <h2 class="st">Keyboard shortcuts<br><em>for this deck.</em></h2>
+    <div style="display:flex;flex-direction:column;gap:14px;max-width:480px;flex:0">
+      <div style="display:flex;gap:16px;align-items:center">
+        <div style="font-family:var(--font-m);font-size:14px;background:var(--card);border:1px solid var(--border-mid);border-radius:5px;padding:6px 12px;min-width:80px;text-align:center;color:var(--off-white)">→ Space</div>
+        <div style="font-size:15px;color:var(--fg-2)">Next slide</div>
+      </div>
+      <div style="display:flex;gap:16px;align-items:center">
+        <div style="font-family:var(--font-m);font-size:14px;background:var(--card);border:1px solid var(--border-mid);border-radius:5px;padding:6px 12px;min-width:80px;text-align:center;color:var(--off-white)">←</div>
+        <div style="font-size:15px;color:var(--fg-2)">Previous slide</div>
+      </div>
+      <div style="display:flex;gap:16px;align-items:center">
+        <div style="font-family:var(--font-m);font-size:14px;background:var(--card);border:1px solid var(--border-mid);border-radius:5px;padding:6px 12px;min-width:80px;text-align:center;color:var(--off-white)">F</div>
+        <div style="font-size:15px;color:var(--fg-2)">Toggle fullscreen</div>
+      </div>
+      <div style="display:flex;gap:16px;align-items:center">
+        <div style="font-family:var(--font-m);font-size:14px;background:var(--card);border:1px solid var(--border-mid);border-radius:5px;padding:6px 12px;min-width:80px;text-align:center;color:var(--off-white)">Click</div>
+        <div style="font-size:15px;color:var(--fg-2)">Advance to next slide</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────── 15 NEXT UP ─────────────────── -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow-lbl" style="font-family:var(--font-m);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);margin-bottom:20px">eval checkpoint</div>
+    <h2 style="font-family:var(--font-d);font-size:clamp(28px,3vw,44px);margin-bottom:24px">Define <em>"Good"</em> Before You Build</h2>
+    <p style="color:var(--fg-2);margin-bottom:28px">Three questions every agent eval must answer — decide them now, not after your first production failure.</p>
+    <div class="pts">
+      <div class="pt"><span class="pt-n">1</span><div><strong>Correctness</strong> — Did it find the real bug? Keyword match against known expected findings.</div></div>
+      <div class="pt"><span class="pt-n">2</span><div><strong>Quality</strong> — Is the finding useful to a developer? LLM judge: accuracy + specificity + actionability.</div></div>
+      <div class="pt"><span class="pt-n">3</span><div><strong>Behavior</strong> — Did it use the right tools? No hallucinated selectors, no infinite loops.</div></div>
+    </div>
+    <div class="tip" style="margin-top:24px">You can't improve what you don't measure. Save baseline scores before you change the agent prompt or model.</div>
+  </div>
+</section>
+
+<section class="slide s-next">
+  <div class="si">
+    <div style="text-align:center;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px">
+      <div class="next-label">Up next</div>
+      <div class="next-arr">→</div>
+      <div class="next-title">Module 02: <em>Single-Agent Runner</em></div>
+      <div class="next-sub" style="max-width:480px">Build a working test agent from scratch in Python and TypeScript. Navigate a real browser, add todos, assert state, and report — all driven by the loop you just learned.</div>
+      <div style="display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin-top:8px">
+        <span class="pill">tools.py — 10 browser actions</span>
+        <span class="pill">agent.py — the loop</span>
+        <span class="pill">run.py — plain English task</span>
+        <span class="pill">ARIA locators</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /.deck -->
+
+<button class="nav-btn prev dim" id="prevBtn" title="Previous (←)">←</button>
+<button class="nav-btn next" id="nextBtn" title="Next (→)">→</button>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let cur = 0;
+
+function show(n) {
+  slides[cur].classList.remove('active');
+  cur = Math.max(0, Math.min(n, total - 1));
+  slides[cur].classList.add('active');
+  document.getElementById('sn').textContent = `${cur + 1} / ${total}`;
+  document.getElementById('pf').style.width = `${((cur + 1) / total) * 100}%`;
+  document.getElementById('prevBtn').classList.toggle('dim', cur === 0);
+  document.getElementById('nextBtn').classList.toggle('dim', cur === total - 1);
+}
+function next() { show(cur + 1); }
+function prev() { show(cur - 1); }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); next(); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                    { e.preventDefault(); prev(); }
+  if (e.key === 'f' || e.key === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+});
+document.getElementById('deck').addEventListener('click', e => {
+  if (!e.target.closest('.nav-btn')) next();
+});
+document.getElementById('prevBtn').addEventListener('click', e => { e.stopPropagation(); prev(); });
+document.getElementById('nextBtn').addEventListener('click', e => { e.stopPropagation(); next(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Module 05 — Multi-Agent · Agent-Driven Test Automation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1a2a;--bg-dark:#0a1220;--card:#13243a;--card-dark:#0d1e30;
+  --off-white:#f5f0eb;--coral:#d4552a;--coral-light:#e8785a;
+  --mint:#4aa8a5;--mint-light:#9dbfb8;--gold:#b8862a;--gold-light:#d4a85a;
+  --violet:#7455bf;--violet-light:#9e85d4;--steel:#3d6abf;--steel-light:#7298d4;
+  --border:rgba(255,255,255,0.08);--border-mid:rgba(255,255,255,0.14);
+  --fg-2:rgba(245,240,235,0.65);--fg-3:rgba(245,240,235,0.38);
+  --accent:var(--gold-light);
+  --font-d:'Playfair Display',Georgia,serif;--font-b:'Inter',-apple-system,sans-serif;--font-m:'JetBrains Mono',monospace;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg-dark);color:var(--off-white)}
+body{font-family:var(--font-b)}
+.progress{position:fixed;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.07);z-index:200}
+.progress-fill{height:100%;background:var(--accent);transition:width .35s ease}
+.deck-hdr{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:16px 48px 0;z-index:199;pointer-events:none}
+.module-tag,.slide-num{font-family:var(--font-m);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-3)}
+.deck{width:100vw;height:100vh;position:relative}
+.slide{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .28s;overflow:hidden}
+.slide.active{opacity:1;pointer-events:all}
+.si{height:100%;display:flex;flex-direction:column;padding:72px 100px 76px;max-width:1480px;margin:0 auto}
+.nav-btn{position:fixed;bottom:28px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--fg-2);border-radius:50%;width:42px;height:42px;font-size:17px;cursor:pointer;transition:all .2s;z-index:200;display:flex;align-items:center;justify-content:center;user-select:none}
+.nav-btn:hover{background:rgba(255,255,255,0.11);color:var(--off-white)}
+.nav-btn.prev{left:36px}.nav-btn.next{right:36px}.nav-btn.dim{opacity:.28;pointer-events:none}
+.eyebrow{font-family:var(--font-m);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;opacity:.9}
+h2.st{font-family:var(--font-d);font-size:clamp(30px,3.2vw,48px);line-height:1.1;letter-spacing:-.02em;margin-bottom:32px}
+h2.st em{font-style:italic;color:var(--accent)}
+.sbody{font-size:17px;line-height:1.65;color:var(--fg-2);max-width:780px}
+.sbody strong{color:var(--off-white)}
+.pts{list-style:none}
+.pts li{display:flex;gap:14px;align-items:flex-start;margin-bottom:15px;font-size:16.5px;line-height:1.5;color:var(--fg-2)}
+.pts li::before{content:'—';color:var(--accent);font-weight:600;flex-shrink:0;margin-top:1px}
+.pts li strong{color:var(--off-white)}
+.code-card{background:var(--card-dark);border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0}
+.code-top{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px}
+.dot{width:11px;height:11px;border-radius:50%}.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+.code-lbl{margin-left:auto;font-family:var(--font-m);font-size:10.5px;color:var(--fg-3);letter-spacing:.1em}
+pre{padding:22px 26px;font-family:var(--font-m);font-size:13px;line-height:1.75;overflow-x:auto;white-space:pre}
+.kw{color:#e8785a}.fn{color:#d4a85a}.st{color:#9dbfb8}.cm{color:rgba(245,240,235,.32);font-style:italic}.tp{color:#9e85d4}.nu{color:#d4a85a}
+.tbl-wrap{overflow:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th{font-family:var(--font-m);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-3);padding:11px 16px;border-bottom:1px solid var(--border-mid);text-align:left}
+.tbl td{padding:12px 16px;border-bottom:1px solid var(--border);color:var(--fg-2);vertical-align:top;line-height:1.4}
+.tbl tr:last-child td{border-bottom:none}.tbl tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+.yes{color:#4aa8a5;font-weight:600}.no{color:var(--fg-3)}.hi{color:var(--off-white);font-weight:600}
+.cols-2{display:grid;grid-template-columns:1fr 1fr;gap:36px;flex:1}
+.col-5050{display:grid;grid-template-columns:1fr 1fr;gap:36px;flex:1}
+.col-4060{display:grid;grid-template-columns:40fr 60fr;gap:36px;flex:1}
+.tip{background:rgba(184,134,42,.07);border:1px solid rgba(184,134,42,.28);border-radius:8px;padding:16px 20px;margin-top:auto}
+.tip-lbl{font-family:var(--font-m);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--accent);margin-bottom:7px}
+.tip p{font-size:15px;color:var(--fg-2);line-height:1.5}.tip p strong{color:var(--off-white)}
+.take-row{display:flex;gap:18px;align-items:flex-start;margin-bottom:18px}
+.take-n{font-family:var(--font-d);font-size:44px;font-weight:400;color:var(--accent);opacity:.22;line-height:.9;flex-shrink:0;width:48px}
+.take-title{font-size:16px;font-weight:600;color:var(--off-white);margin-bottom:3px}
+.take-sub{font-size:14px;color:var(--fg-2);line-height:1.5}
+.s-title .si{align-items:center;justify-content:center;text-align:center}
+.title-bg-num{font-family:var(--font-d);font-size:240px;font-weight:400;color:var(--gold);opacity:.04;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;line-height:1;user-select:none}
+.course-label{font-family:var(--font-m);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--fg-3);margin-bottom:28px}
+.title-module{font-family:var(--font-m);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;opacity:.9}
+.title-h1{font-family:var(--font-d);font-size:clamp(36px,4.5vw,62px);line-height:1.05;letter-spacing:-.03em;margin-bottom:20px}
+.title-h1 em{font-style:italic;color:var(--accent)}
+.title-sub{font-size:17px;color:var(--fg-2);margin-bottom:40px}
+.pill{font-family:var(--font-m);font-size:11px;letter-spacing:.14em;padding:6px 14px;border:1px solid var(--border-mid);border-radius:999px;color:var(--fg-2)}
+.title-pills{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.s-next .si{align-items:center;justify-content:center}
+.next-arr{font-family:var(--font-d);font-size:80px;color:var(--accent);opacity:.2;text-align:center}
+.next-label{font-family:var(--font-m);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--fg-3);text-align:center;margin-bottom:16px}
+.next-title{font-family:var(--font-d);font-size:32px;text-align:center;margin-bottom:8px}
+.next-title em{font-style:italic;color:var(--accent)}
+.next-sub{font-size:15px;color:var(--fg-2);text-align:center}
+/* runner colors */
+.r1{color:#e8785a}.r2{color:#9dbfb8}.r3{color:#7298d4}.r4{color:#d4a85a}.r5{color:#9e85d4}
+</style>
+</head>
+<body>
+<div class="progress"><div class="progress-fill" id="pf" style="width:8.33%"></div></div>
+<div class="deck-hdr">
+  <span class="module-tag">Module 05 · Multi-Agent Orchestration</span>
+  <span class="slide-num" id="sn">1 / 12</span>
+</div>
+<div class="deck" id="deck">
+
+<!-- 01 TITLE -->
+<section class="slide s-title active">
+  <div class="title-bg-num">05</div>
+  <div class="si">
+    <div class="course-label">Agent-Driven Test Automation</div>
+    <div class="title-module">Module 05</div>
+    <h1 class="title-h1">Multi-Agent<br><em>Orchestration</em></h1>
+    <p class="title-sub">One orchestrator plans. Many runners execute in parallel.</p>
+    <div class="title-pills">
+      <span class="pill">tool_choice</span><span class="pill">forced structured output</span>
+      <span class="pill">ThreadPoolExecutor</span><span class="pill">Promise.all</span><span class="pill">~32 min</span>
+    </div>
+  </div>
+</section>
+
+<!-- 02 SEQUENTIAL VS PARALLEL -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">The Problem</div>
+    <h2 class="st">Sequential is the<br><em>ceiling. Parallel is not.</em></h2>
+    <div class="col-4060" style="align-items:center">
+      <div>
+        <p class="sbody" style="margin-bottom:20px">With a single agent, scenarios run one at a time. 20 scenarios × 2 min each = <strong>40 minutes</strong>.</p>
+        <p class="sbody">With parallel runners, 20 scenarios take <strong>~2 minutes</strong> — the time of the slowest one.</p>
+      </div>
+      <div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px 22px;margin-bottom:16px">
+          <div style="font-family:var(--font-m);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--fg-3);margin-bottom:10px">Sequential — one agent</div>
+          <div style="display:flex;gap:4px">
+            <div style="background:rgba(212,85,42,.4);height:20px;border-radius:3px;flex:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:10px">TC-01</div>
+            <div style="background:rgba(74,168,165,.4);height:20px;border-radius:3px;flex:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:10px">TC-02</div>
+            <div style="background:rgba(61,106,191,.4);height:20px;border-radius:3px;flex:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:10px">TC-03</div>
+            <div style="background:rgba(184,134,42,.4);height:20px;border-radius:3px;flex:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:10px">TC-04</div>
+            <div style="background:rgba(116,85,191,.4);height:20px;border-radius:3px;flex:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:10px">TC-05</div>
+          </div>
+          <div style="font-family:var(--font-m);font-size:10px;color:var(--fg-3);margin-top:6px">total = sum of all</div>
+        </div>
+        <div style="background:var(--card);border:1px solid rgba(184,134,42,.3);border-radius:8px;padding:20px 22px">
+          <div style="font-family:var(--font-m);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-light);margin-bottom:10px">Parallel — 5 runners</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="background:rgba(212,85,42,.4);height:16px;border-radius:3px;width:85%;display:flex;align-items:center;padding-left:8px;font-family:var(--font-m);font-size:10px">TC-01</div>
+            <div style="background:rgba(74,168,165,.4);height:16px;border-radius:3px;width:100%;display:flex;align-items:center;padding-left:8px;font-family:var(--font-m);font-size:10px">TC-02</div>
+            <div style="background:rgba(61,106,191,.4);height:16px;border-radius:3px;width:70%;display:flex;align-items:center;padding-left:8px;font-family:var(--font-m);font-size:10px">TC-03</div>
+            <div style="background:rgba(184,134,42,.4);height:16px;border-radius:3px;width:90%;display:flex;align-items:center;padding-left:8px;font-family:var(--font-m);font-size:10px">TC-04</div>
+            <div style="background:rgba(116,85,191,.4);height:16px;border-radius:3px;width:80%;display:flex;align-items:center;padding-left:8px;font-family:var(--font-m);font-size:10px">TC-05</div>
+          </div>
+          <div style="font-family:var(--font-m);font-size:10px;color:var(--gold-light);margin-top:6px">total = slowest scenario</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 ARCHITECTURE -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Architecture</div>
+    <h2 class="st">One orchestrator.<br><em>Many runners.</em></h2>
+    <div class="col-4060" style="align-items:start">
+      <div>
+        <ul class="pts" style="margin-top:0">
+          <li><strong>Orchestrator</strong> reads a feature description, generates a structured test plan via <code style="font-family:var(--font-m);font-size:13px">tool_choice</code>.</li>
+          <li><strong>Runners</strong> execute scenarios. Each gets its own browser instance — fully isolated.</li>
+          <li><strong>TestReport</strong> aggregates all results into a structured object.</li>
+        </ul>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">pipeline</div></div>
+        <pre>run.py
+│
+├── orchestrator.<span class="fn">plan</span>(feature)
+│         └── list[TestScenario]
+│
+└── parallel dispatch
+    ├── <span class="r1">runner(TC-01)</span> → browser → <span class="tp">RunnerResult</span>
+    ├── <span class="r2">runner(TC-02)</span> → browser → <span class="tp">RunnerResult</span>
+    ├── <span class="r3">runner(TC-03)</span> → browser → <span class="tp">RunnerResult</span>
+    ├── <span class="r4">runner(TC-04)</span> → browser → <span class="tp">RunnerResult</span>
+    └── <span class="r5">runner(TC-05)</span> → browser → <span class="tp">RunnerResult</span>
+                              ↓
+                        <span class="tp">TestReport</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 MODELS.PY -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">models.py</div>
+    <h2 class="st">Typed data models —<br><em>the API contract.</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">models.py</div></div>
+        <pre><span class="kw">@dataclass</span>
+<span class="kw">class</span> <span class="tp">TestScenario</span>:
+    id: <span class="tp">str</span>
+    title: <span class="tp">str</span>
+    steps: <span class="tp">list</span>[<span class="tp">str</span>]
+    url: <span class="tp">str</span>
+
+<span class="kw">@dataclass</span>
+<span class="kw">class</span> <span class="tp">RunnerResult</span>:
+    scenario_id: <span class="tp">str</span>
+    title: <span class="tp">str</span>
+    passed: <span class="tp">bool</span>
+    summary: <span class="tp">str</span>
+    step_log: <span class="tp">list</span>[<span class="tp">dict</span>]
+
+<span class="kw">@dataclass</span>
+<span class="kw">class</span> <span class="tp">TestReport</span>:
+    scenarios: <span class="tp">list</span>[<span class="tp">RunnerResult</span>]
+    <span class="cm"># computed: .passed .failed .total</span></pre>
+      </div>
+      <div>
+        <p class="sbody" style="margin-bottom:20px">These dataclasses are the <strong>typed contract</strong> between the orchestrator and runners. When the orchestrator produces a <code style="font-family:var(--font-m);font-size:13px">TestScenario</code>, the runner knows exactly what fields to expect.</p>
+        <div class="tip" style="margin-top:0">
+          <div class="tip-lbl">Define models first</div>
+          <p>Shared data models prevent silent mismatches between what one agent produces and another expects. <strong>Rename a field? Python raises an error immediately.</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 TOOL_CHOICE FORCED OUTPUT -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">orchestrator.py · Forced Structured Output</div>
+    <h2 class="st">tool_choice enforces<br><em>guaranteed-valid JSON.</em></h2>
+    <div class="code-card" style="flex:1">
+      <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">orchestrator.py — plan()</div></div>
+      <pre>response = _CLIENT.messages.<span class="fn">create</span>(
+    model=<span class="st">"claude-sonnet-4-6"</span>,
+    max_tokens=<span class="nu">2048</span>,
+    system=_SYSTEM,
+    tools=[_PLAN_TOOL],
+    tool_choice={ <span class="st">"type"</span>: <span class="st">"tool"</span>, <span class="st">"name"</span>: <span class="st">"create_test_plan"</span> },
+    <span class="cm"># ↑ Forces the model to call this specific tool.
+    #   Response ALWAYS contains a tool_use block.
+    #   API validates output against the schema.</span>
+    messages=[{ <span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: feature }],
+)
+
+tool_block = <span class="fn">next</span>(b <span class="kw">for</span> b <span class="kw">in</span> response.content <span class="kw">if</span> b.type == <span class="st">"tool_use"</span>)
+raw = tool_block.input[<span class="st">"scenarios"</span>]
+<span class="cm"># ↑ Already a Python list matching the schema.
+#   No JSON parsing. No regex. No "hope the model followed the format."</span>
+
+<span class="kw">return</span> [<span class="tp">TestScenario</span>(**s) <span class="kw">for</span> s <span class="kw">in</span> raw]</pre>
+    </div>
+    <div class="tip" style="margin-top:12px">
+      <div class="tip-lbl">Use this pattern everywhere you need structured output</div>
+      <p>Don't prompt "output JSON in this format" — the model sometimes deviates. <strong>tool_choice enforces the schema at the API level.</strong> Zero parsing code.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 06 RUNNER.PY -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">runner.py</div>
+    <h2 class="st">The agent from Module 02,<br><em>wrapped in a function.</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">runner.py</div></div>
+        <pre><span class="kw">def</span> <span class="fn">run_scenario</span>(
+    scenario: <span class="tp">TestScenario</span>,
+    headless: <span class="tp">bool</span> = <span class="nu">True</span>
+) -> <span class="tp">RunnerResult</span>:
+    prefix = <span class="st">f"[</span>{scenario.id}<span class="st">]"</span>
+
+    task = (
+        <span class="st">f"Scenario: </span>{scenario.title}<span class="st">\n\n"</span>
+        <span class="st">f"Start URL: </span>{scenario.url}<span class="st">\n\n"</span>
+        <span class="st">"Steps:\n"</span> +
+        <span class="st">"\n"</span>.<span class="fn">join</span>(<span class="st">f"</span>{i+<span class="nu">1</span>}<span class="st">. </span>{s}<span class="st">"</span>
+            <span class="kw">for</span> i, s <span class="kw">in</span> <span class="fn">enumerate</span>(scenario.steps))
+    )
+
+    <span class="cm"># Every runner: own playwright context</span>
+    <span class="kw">with</span> <span class="fn">sync_playwright</span>() <span class="kw">as</span> p:
+        browser = p.chromium.<span class="fn">launch</span>(headless=headless)
+        context = browser.<span class="fn">new_context</span>(...)
+        page = context.<span class="fn">new_page</span>()
+        <span class="cm"># ... identical loop from Module 02 ...</span></pre>
+      </div>
+      <div>
+        <p class="sbody" style="margin-bottom:18px">Pass detection: check the first word of the agent's final text block. PASS or FAIL — consistent because the system prompt requires it.</p>
+        <div class="code-card">
+          <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+          <pre>passed = (
+    <span class="st">"FAIL"</span> <span class="kw">not in</span>
+    final_text.upper().<span class="fn">split</span>()[<span class="nu">0</span>]
+    <span class="kw">if</span> final_text <span class="kw">else</span> <span class="nu">False</span>
+)
+<span class="kw">return</span> <span class="tp">RunnerResult</span>(
+    scenario_id=scenario.id,
+    passed=passed,
+    summary=final_text,
+    ...
+)</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 THREADPOOLEXECUTOR + PROMISE.ALL -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">run.py · Parallel Dispatch</div>
+    <h2 class="st">Python: threads.<br><em>TypeScript: Promise.all.</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div>
+        <div class="code-card" style="margin-bottom:12px">
+          <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">run.py — ThreadPoolExecutor</div></div>
+          <pre><span class="kw">from</span> concurrent.futures <span class="kw">import</span> (
+    ThreadPoolExecutor, as_completed
+)
+
+<span class="kw">with</span> <span class="fn">ThreadPoolExecutor</span>(
+    max_workers=<span class="fn">len</span>(scenarios)
+) <span class="kw">as</span> pool:
+    futures = {
+        pool.<span class="fn">submit</span>(run_scenario, s, headless): s
+        <span class="kw">for</span> s <span class="kw">in</span> scenarios
+    }
+    <span class="kw">for</span> future <span class="kw">in</span> <span class="fn">as_completed</span>(futures):
+        results.<span class="fn">append</span>(future.<span class="fn">result</span>())</pre>
+        </div>
+        <div class="tip" style="margin-top:0">
+          <div class="tip-lbl">Why threads, not asyncio?</div>
+          <p>Playwright's sync API is <strong>thread-safe but NOT asyncio-safe</strong>. Each thread runs its own <code style="font-family:var(--font-m);font-size:12px">sync_playwright()</code> context. Don't use asyncio.gather().</p>
+        </div>
+      </div>
+      <div>
+        <div class="code-card">
+          <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">index.ts — Promise.all</div></div>
+          <pre><span class="cm">// TypeScript: naturally async</span>
+<span class="kw">const</span> results = <span class="kw">await</span> Promise.<span class="fn">all</span>(
+    scenarios.<span class="fn">map</span>((s) => <span class="fn">runScenario</span>(s, headless))
+);
+
+<span class="cm">// Each runScenario creates its own:
+//   await chromium.launch({ headless })
+//   await browser.newContext(...)
+//   await context.newPage()
+// No shared state between runs.</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 08 LIVE DEMO -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Live Demo</div>
+    <h2 class="st">Five browsers.<br><em>Simultaneously.</em></h2>
+    <div class="code-card" style="flex:1">
+      <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">terminal — python run.py</div></div>
+      <pre>Orchestrator generated <span class="nu">5</span> scenario(s):
+  <span class="r1">[TC-01]</span> Add and verify multiple todos  (<span class="nu">4</span> steps)
+  <span class="r2">[TC-02]</span> Mark todo complete, check filter  (<span class="nu">5</span> steps)
+  <span class="r3">[TC-03]</span> Delete a todo and verify count  (<span class="nu">4</span> steps)
+  <span class="r4">[TC-04]</span> Active filter shows only incomplete  (<span class="nu">5</span> steps)
+  <span class="r5">[TC-05]</span> Clear all completed todos  (<span class="nu">4</span> steps)
+
+Running <span class="nu">5</span> scenario(s) in parallel...
+<span class="cm">══════════════════════════════════════════════</span>
+<span class="r1">[TC-01]</span>   → navigate: Navigated to https://...todomvc
+<span class="r3">[TC-03]</span>   → navigate: Navigated to https://...todomvc
+<span class="r2">[TC-02]</span>   → navigate: Navigated to https://...todomvc
+<span class="r5">[TC-05]</span>   → navigate: Navigated to https://...todomvc
+<span class="r4">[TC-04]</span>   → navigate: Navigated to https://...todomvc
+<span class="cm">... interleaved tool calls from all 5 runners ...</span>
+<span class="cm">══════════════════════════════════════════════</span>
+RESULTS  <span class="nu">5</span>/<span class="nu">5</span> passed
+
+  <span class="r1">[TC-01]</span> PASS  Add and verify multiple todos
+  <span class="r2">[TC-02]</span> PASS  Mark todo complete, check filter
+  <span class="r3">[TC-03]</span> PASS  Delete a todo and verify count
+  <span class="r4">[TC-04]</span> PASS  Active filter shows only incomplete
+  <span class="r5">[TC-05]</span> PASS  Clear all completed todos</pre>
+    </div>
+  </div>
+</section>
+
+<!-- 09 KEY TAKEAWAYS -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Module 05 · Key Takeaways</div>
+    <h2 class="st">Five things<br><em>to carry forward.</em></h2>
+    <div style="flex:1">
+      <div class="take-row"><div class="take-n">1</div><div><div class="take-title">tool_choice forces structured output</div><div class="take-sub">API validates against the schema. Guaranteed-valid JSON. Zero parsing code. Use this everywhere you need structured data from the model.</div></div></div>
+      <div class="take-row"><div class="take-n">2</div><div><div class="take-title">Shared data models are the API contract</div><div class="take-sub">Define TestScenario, RunnerResult, TestReport first. They constrain what the orchestrator produces and what runners consume.</div></div></div>
+      <div class="take-row"><div class="take-n">3</div><div><div class="take-title">Python: ThreadPoolExecutor. TypeScript: Promise.all</div><div class="take-sub">Don't use asyncio with sync Playwright. Each thread / async call needs its own browser instance.</div></div></div>
+      <div class="take-row"><div class="take-n">4</div><div><div class="take-title">Isolation is non-negotiable</div><div class="take-sub">No shared browser contexts between concurrent runners. Shared state causes flaky tests that are nearly impossible to debug.</div></div></div>
+      <div class="take-row"><div class="take-n">5</div><div><div class="take-title">[scenario_id] prefix in output is not optional</div><div class="take-sub">Without it, interleaved output from five runners is unreadable. Always prefix console output in parallel runs.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 EVAL CHECKPOINT -->
+<section class="slide">
+  <div class="si">
+    <div style="font-family:var(--font-m);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);margin-bottom:20px">eval checkpoint</div>
+    <h2 style="font-family:var(--font-d);font-size:clamp(28px,3vw,44px);margin-bottom:24px">Eval Your <em>Multi-Agent System</em></h2>
+    <p style="color:var(--fg-2);margin-bottom:24px">Parallelism introduces two new failure modes you must measure:</p>
+    <div class="pts" style="margin-bottom:24px">
+      <div class="pt"><span class="pt-n">1</span><div><strong>Inter-runner consistency</strong> — Run all 5 runners on the same scenario. Apply deterministic judge to each finding. If coverage varies by &gt; 15%, the prompt is non-deterministic enough to be unreliable.</div></div>
+      <div class="pt"><span class="pt-n">2</span><div><strong>Throughput improvement</strong> — Compare wall-clock time: parallel run vs sequential simulation. Target ≥ 3× speedup for 5 runners. Less means contention or rate limiting.</div></div>
+      <div class="pt"><span class="pt-n">3</span><div><strong>tool_choice conformance</strong> — Verify forced structured output still parses cleanly under parallel load. Track JSON parse failures per 100 runs.</div></div>
+    </div>
+    <div class="tip">Consistency across runners is the multi-agent equivalent of test flakiness. Measure it before you add more runners.</div>
+  </div>
+</section>
+
+<!-- 11 NEXT -->
+<section class="slide s-next">
+  <div class="si">
+    <div style="text-align:center;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px">
+      <div class="next-label">Up next</div>
+      <div class="next-arr">→</div>
+      <div class="next-title">Module 06: <em>Full Framework</em></div>
+      <div class="next-sub" style="max-width:500px">Four specialist agents. The Architect plans, Runners execute, the Asserter classifies failures, the Reporter writes files. Priority-aware orchestration. Real triage output.</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:8px">
+        <span class="pill">Architect → Runner → Asserter → Reporter</span>
+        <span class="pill">Finding classifications</span>
+        <span class="pill">Priority dispatch</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+<button class="nav-btn prev dim" id="prevBtn">←</button>
+<button class="nav-btn next" id="nextBtn">→</button>
+<script>
+const slides=document.querySelectorAll('.slide'),total=slides.length;let cur=0;
+function show(n){slides[cur].classList.remove('active');cur=Math.max(0,Math.min(n,total-1));slides[cur].classList.add('active');document.getElementById('sn').textContent=`${cur+1} / ${total}`;document.getElementById('pf').style.width=`${((cur+1)/total)*100}%`;document.getElementById('prevBtn').classList.toggle('dim',cur===0);document.getElementById('nextBtn').classList.toggle('dim',cur===total-1);}
+function next(){show(cur+1);}function prev(){show(cur-1);}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){e.preventDefault();next();}if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();prev();}if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}});
+document.getElementById('deck').addEventListener('click',e=>{if(!e.target.closest('.nav-btn'))next();});
+document.getElementById('prevBtn').addEventListener('click',e=>{e.stopPropagation();prev();});
+document.getElementById('nextBtn').addEventListener('click',e=>{e.stopPropagation();next();});
+</script>
+</body>
+</html>

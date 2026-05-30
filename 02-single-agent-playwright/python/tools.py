@@ -44,6 +44,14 @@ def fill(
     return f"Filled with: {value}"
 
 
+def press(page: Page, key: str, selector: str | None = None) -> str:
+    if selector:
+        page.locator(selector).press(key)
+    else:
+        page.keyboard.press(key)
+    return f"Pressed: {key}"
+
+
 def get_text(page: Page, selector: str) -> str:
     return page.locator(selector).first.inner_text()
 
@@ -139,6 +147,18 @@ TOOL_DEFINITIONS = [
         },
     },
     {
+        "name": "press",
+        "description": "Press a keyboard key. Use selector to focus a specific element first, or omit to press on the focused element. Common keys: Enter, Tab, Escape, ArrowDown.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "key":      {"type": "string", "description": "Key name, e.g. 'Enter', 'Tab', 'Escape'"},
+                "selector": {"type": "string", "description": "CSS selector to focus before pressing (optional)"},
+            },
+            "required": ["key"],
+        },
+    },
+    {
         "name": "get_text",
         "description": "Get the inner text of an element by CSS selector.",
         "input_schema": {
@@ -202,6 +222,7 @@ def dispatch(name: str, inputs: dict, page: Page) -> str:
         "find_element": lambda: find_element(page, **inputs),
         "click": lambda: click(page, **inputs),
         "fill": lambda: fill(page, **inputs),
+        "press": lambda: press(page, **inputs),
         "get_text": lambda: get_text(page, **inputs),
         "assert_visible": lambda: assert_visible(page, **inputs),
         "assert_not_visible": lambda: assert_not_visible(page, **inputs),

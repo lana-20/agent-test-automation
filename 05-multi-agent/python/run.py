@@ -22,7 +22,7 @@ def main(headless: bool = True) -> None:
     print(f"\nRunning {len(scenarios)} scenario(s) in parallel...\n" + "=" * 60)
 
     results = []
-    with ThreadPoolExecutor(max_workers=len(scenarios)) as pool:
+    with ThreadPoolExecutor(max_workers=min(len(scenarios), 3)) as pool:
         futures = {
             pool.submit(run_scenario, s, headless): s for s in scenarios
         }

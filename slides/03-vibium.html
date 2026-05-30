@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Module 03 — Vibium · Agent-Driven Test Automation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1a2a;--bg-dark:#0a1220;--card:#13243a;--card-dark:#0d1e30;
+  --off-white:#f5f0eb;--coral:#d4552a;--coral-light:#e8785a;
+  --mint:#4aa8a5;--mint-light:#9dbfb8;--gold:#b8862a;--gold-light:#d4a85a;
+  --violet:#7455bf;--violet-light:#9e85d4;--steel:#3d6abf;--steel-light:#7298d4;
+  --border:rgba(255,255,255,0.08);--border-mid:rgba(255,255,255,0.14);
+  --fg-2:rgba(245,240,235,0.65);--fg-3:rgba(245,240,235,0.38);
+  --accent:var(--mint);--accent-rgb:74,168,165;
+  --font-d:'Playfair Display',Georgia,serif;
+  --font-b:'Inter',-apple-system,sans-serif;
+  --font-m:'JetBrains Mono',monospace;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg-dark);color:var(--off-white)}
+body{font-family:var(--font-b)}
+.progress{position:fixed;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.07);z-index:200}
+.progress-fill{height:100%;background:var(--accent);transition:width .35s ease}
+.deck-hdr{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:16px 48px 0;z-index:199;pointer-events:none}
+.module-tag{font-family:var(--font-m);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-3)}
+.slide-num{font-family:var(--font-m);font-size:11px;color:var(--fg-3)}
+.deck{width:100vw;height:100vh;position:relative}
+.slide{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .28s;overflow:hidden}
+.slide.active{opacity:1;pointer-events:all}
+.si{height:100%;display:flex;flex-direction:column;padding:72px 100px 76px;max-width:1480px;margin:0 auto}
+.nav-btn{position:fixed;bottom:28px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--fg-2);border-radius:50%;width:42px;height:42px;font-size:17px;cursor:pointer;transition:all .2s;z-index:200;display:flex;align-items:center;justify-content:center;user-select:none}
+.nav-btn:hover{background:rgba(255,255,255,0.11);color:var(--off-white)}
+.nav-btn.prev{left:36px}.nav-btn.next{right:36px}.nav-btn.dim{opacity:.28;pointer-events:none}
+.eyebrow{font-family:var(--font-m);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;opacity:.9}
+h2.st{font-family:var(--font-d);font-size:clamp(30px,3.2vw,48px);line-height:1.1;letter-spacing:-.02em;margin-bottom:32px}
+h2.st em{font-style:italic;color:var(--accent)}
+h3.sst{font-family:var(--font-d);font-size:clamp(18px,1.8vw,24px);line-height:1.2;margin-bottom:10px}
+.sbody{font-size:17px;line-height:1.65;color:var(--fg-2);max-width:780px}
+.sbody strong{color:var(--off-white)}
+.pts{list-style:none}
+.pts li{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;font-size:17px;line-height:1.5;color:var(--fg-2)}
+.pts li::before{content:'—';color:var(--accent);font-weight:600;flex-shrink:0;margin-top:1px}
+.pts li strong{color:var(--off-white)}
+.code-card{background:var(--card-dark);border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0}
+.code-top{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px}
+.dot{width:11px;height:11px;border-radius:50%}
+.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+.code-lbl{margin-left:auto;font-family:var(--font-m);font-size:10.5px;color:var(--fg-3);letter-spacing:.1em}
+pre{padding:22px 26px;font-family:var(--font-m);font-size:13.5px;line-height:1.75;overflow-x:auto;white-space:pre}
+.kw{color:#e8785a}.fn{color:#9dbfb8}.st{color:#9dbfb8}.cm{color:rgba(245,240,235,.32);font-style:italic}
+.tp{color:#9e85d4}.nu{color:#d4a85a}.hi-line{background:rgba(74,168,165,.18);display:block;margin:0 -26px;padding:0 26px}
+.tbl-wrap{overflow:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th{font-family:var(--font-m);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-3);padding:11px 16px;border-bottom:1px solid var(--border-mid);text-align:left}
+.tbl td{padding:12px 16px;border-bottom:1px solid var(--border);color:var(--fg-2);vertical-align:top;line-height:1.4}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:nth-child(even) td{background:rgba(255,255,255,0.02)}
+.yes{color:#4aa8a5;font-weight:600}.no{color:var(--fg-3)}.hi{color:var(--off-white);font-weight:600}
+.cols-2{display:grid;grid-template-columns:1fr 1fr;gap:36px;flex:1}
+.col-5050{display:grid;grid-template-columns:1fr 1fr;gap:40px;flex:1}
+.col-4060{display:grid;grid-template-columns:40fr 60fr;gap:40px;flex:1}
+.tip{background:rgba(74,168,165,.07);border:1px solid rgba(74,168,165,.28);border-radius:8px;padding:16px 20px;margin-top:auto}
+.tip-lbl{font-family:var(--font-m);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--accent);margin-bottom:7px}
+.tip p{font-size:15px;color:var(--fg-2);line-height:1.5}
+.tip p strong{color:var(--off-white)}
+.take-row{display:flex;gap:18px;align-items:flex-start;margin-bottom:18px}
+.take-n{font-family:var(--font-d);font-size:44px;font-weight:400;color:var(--accent);opacity:.22;line-height:.9;flex-shrink:0;width:48px}
+.take-body{padding-top:2px}
+.take-title{font-size:16px;font-weight:600;color:var(--off-white);margin-bottom:3px}
+.take-sub{font-size:14px;color:var(--fg-2);line-height:1.5}
+.s-title .si{align-items:center;justify-content:center;text-align:center}
+.title-bg-num{font-family:var(--font-d);font-size:240px;font-weight:400;color:var(--accent);opacity:.04;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;line-height:1;user-select:none}
+.course-label{font-family:var(--font-m);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--fg-3);margin-bottom:28px}
+.title-module{font-family:var(--font-m);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;opacity:.9}
+.title-h1{font-family:var(--font-d);font-size:clamp(40px,5vw,68px);line-height:1.05;letter-spacing:-.03em;margin-bottom:20px}
+.title-h1 em{font-style:italic;color:var(--accent)}
+.title-sub{font-size:17px;color:var(--fg-2);margin-bottom:40px}
+.pill{font-family:var(--font-m);font-size:11px;letter-spacing:.14em;padding:6px 14px;border:1px solid var(--border-mid);border-radius:999px;color:var(--fg-2)}
+.title-pills{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.s-next .si{align-items:center;justify-content:center}
+.next-label{font-family:var(--font-m);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--fg-3);text-align:center;margin-bottom:16px}
+.next-arr{font-family:var(--font-d);font-size:80px;color:var(--accent);opacity:.2;text-align:center}
+.next-title{font-family:var(--font-d);font-size:32px;text-align:center;margin-bottom:8px}
+.next-title em{font-style:italic;color:var(--accent)}
+.next-sub{font-size:15px;color:var(--fg-2);text-align:center}
+</style>
+</head>
+<body>
+<div class="progress"><div class="progress-fill" id="pf" style="width:7.14%"></div></div>
+<div class="deck-hdr">
+  <span class="module-tag">Module 03 · Single-Agent — Vibium</span>
+  <span class="slide-num" id="sn">1 / 14</span>
+</div>
+<div class="deck" id="deck">
+
+<!-- 01 TITLE -->
+<section class="slide s-title active">
+  <div class="title-bg-num">03</div>
+  <div class="si">
+    <div class="course-label">Agent-Driven Test Automation</div>
+    <div class="title-module">Module 03</div>
+    <h1 class="title-h1">Single-Agent Runner:<br><em>Vibium</em></h1>
+    <p class="title-sub">Same loop. Different driver. Plus the MCP approach.</p>
+    <div class="title-pills">
+      <span class="pill">page.go() vs goto()</span>
+      <span class="pill">find({role, text})</span>
+      <span class="pill">MCP — zero wrapper code</span>
+      <span class="pill">~31 min</span>
+    </div>
+  </div>
+</section>
+
+<!-- 02 SAME LOOP, DIFFERENT DRIVER -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Core Point</div>
+    <h2 class="st">Change the driver.<br><em>The loop doesn't move.</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">agent.py — Module 02 (Playwright)</div></div>
+        <pre><span class="kw">from</span> playwright.sync_api <span class="kw">import</span> sync_playwright
+
+<span class="kw">with</span> <span class="fn">sync_playwright</span>() <span class="kw">as</span> p:
+    browser = p.chromium.<span class="fn">launch</span>(headless=headless)
+    context = browser.<span class="fn">new_context</span>(...)
+    page = context.<span class="fn">new_page</span>()
+
+    <span class="cm"># ... identical loop ...</span>
+
+<span class="cm"># browser closes automatically</span></pre>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">agent.py — Module 03 (Vibium)</div></div>
+        <pre><span class="kw">from</span> vibium <span class="kw">import</span> browser <span class="kw">as</span> vibium_browser
+
+<span class="hi-line">bro = vibium_browser.<span class="fn">start</span>(headless=headless)</span>
+<span class="hi-line">page = bro.<span class="fn">new_page</span>()</span>
+
+<span class="cm"># ... identical loop ...</span>
+
+<span class="hi-line">bro.<span class="fn">close</span>()</span></pre>
+      </div>
+    </div>
+    <div class="tip" style="margin-top:16px">
+      <div class="tip-lbl">Architecture payoff</div>
+      <p>The agent loop is <strong>driver-agnostic</strong>. Swap the browser setup + dispatch implementations — the model sees identical tool names, identical result strings.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 03 WHAT IS VIBIUM -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">What Is Vibium?</div>
+    <h2 class="st">Three interfaces,<br><em>one browser automation tool.</em></h2>
+    <div class="cols-2" style="align-items:start;gap:28px">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="padding:20px 22px;background:var(--card);border:1px solid rgba(74,168,165,.3);border-radius:8px">
+          <div style="font-family:var(--font-m);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mint);margin-bottom:8px">Programmatic API</div>
+          <div style="font-weight:600;color:var(--off-white);margin-bottom:4px">Python + TypeScript</div>
+          <div style="font-size:14px;color:var(--fg-2)">Direct Playwright-like API. <code style="font-family:var(--font-m);font-size:12px">page.go()</code>, <code style="font-family:var(--font-m);font-size:12px">page.find()</code>, <code style="font-family:var(--font-m);font-size:12px">capture.screenshot()</code>. This module's primary focus.</div>
+        </div>
+        <div style="padding:20px 22px;background:var(--card);border:1px solid var(--border);border-radius:8px">
+          <div style="font-family:var(--font-m);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-3);margin-bottom:8px">CLI</div>
+          <div style="font-weight:600;color:var(--off-white);margin-bottom:4px">Command line</div>
+          <div style="font-size:14px;color:var(--fg-2)">85 browser commands. Covered in Module 02 of the vibium course.</div>
+        </div>
+        <div style="padding:20px 22px;background:var(--card);border:1px solid var(--border);border-radius:8px">
+          <div style="font-family:var(--font-m);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-3);margin-bottom:8px">MCP Server</div>
+          <div style="font-weight:600;color:var(--off-white);margin-bottom:4px">Model Context Protocol</div>
+          <div style="font-size:14px;color:var(--fg-2)">85 tools exposed as MCP. Claude calls them directly — no wrapper code. Second half of this module.</div>
+        </div>
+      </div>
+      <div>
+        <p class="sbody" style="margin-bottom:20px">Built for AI workflows. The programmatic API is more expressive for AI-generated call sites:</p>
+        <div class="code-card">
+          <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+          <pre><span class="cm"># Playwright</span>
+page.<span class="fn">get_by_role</span>(<span class="st">"button"</span>, name=<span class="st">"Add"</span>).<span class="fn">click</span>()
+
+<span class="cm"># Vibium — more expressive</span>
+page.<span class="fn">find</span>({ <span class="st">"role"</span>: <span class="st">"button"</span>, <span class="st">"text"</span>: <span class="st">"Add"</span> }).<span class="fn">click</span>()</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 API COMPARISON TABLE -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">API Comparison</div>
+    <h2 class="st">Playwright vs Vibium —<br><em>a small delta.</em></h2>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr><th>Action</th><th>Playwright</th><th>Vibium</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="hi">Navigate</td><td><code style="font-family:var(--font-m);font-size:13px">page.goto(url)</code></td><td><code style="font-family:var(--font-m);font-size:13px;color:var(--mint-light)">page.go(url)</code></td></tr>
+          <tr><td class="hi">Find + click</td><td><code style="font-family:var(--font-m);font-size:12px">get_by_role(role, name=text).click()</code></td><td><code style="font-family:var(--font-m);font-size:12px;color:var(--mint-light)">page.find({role, text}).click()</code></td></tr>
+          <tr><td class="hi">Fill input</td><td><code style="font-family:var(--font-m);font-size:13px">get_by_label(label).fill(value)</code></td><td><code style="font-family:var(--font-m);font-size:13px;color:var(--mint-light)">el.fill(value)</code></td></tr>
+          <tr><td class="hi">Screenshot</td><td><code style="font-family:var(--font-m);font-size:13px">page.screenshot(path=path)</code></td><td><code style="font-family:var(--font-m);font-size:13px;color:var(--mint-light)">page.capture.screenshot(path=path)</code></td></tr>
+          <tr><td class="hi">Title</td><td><code style="font-family:var(--font-m);font-size:13px">page.title()</code></td><td><code style="font-family:var(--font-m);font-size:13px">page.title()</code> <span style="color:var(--fg-3)">same</span></td></tr>
+          <tr><td class="hi">URL</td><td><code style="font-family:var(--font-m);font-size:13px">page.url</code></td><td><code style="font-family:var(--font-m);font-size:13px">page.url</code> <span style="color:var(--fg-3)">same</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tip" style="margin-top:16px">
+      <div class="tip-lbl">The delta</div>
+      <p><code style="font-family:var(--font-m);font-size:12px">goto</code> → <code style="font-family:var(--font-m);font-size:12px">go</code> &nbsp;·&nbsp; <code style="font-family:var(--font-m);font-size:12px">get_by_role()</code> → <code style="font-family:var(--font-m);font-size:12px">find({})</code> &nbsp;·&nbsp; <code style="font-family:var(--font-m);font-size:12px">capture.screenshot</code> instead of <code style="font-family:var(--font-m);font-size:12px">screenshot</code>. <strong>That's the entire delta</strong> between the two implementations.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 05 TOOLS.PY VIBIUM -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">tools.py · Vibium dispatch()</div>
+    <h2 class="st">Same return strings.<br><em>Different API calls.</em></h2>
+    <div class="code-card" style="flex:1">
+      <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">tools.py — Vibium</div></div>
+      <pre><span class="kw">from</span> vibium <span class="kw">import</span> browser <span class="kw">as</span> vibium_browser
+
+<span class="kw">def</span> <span class="fn">dispatch</span>(name: <span class="tp">str</span>, inputs: <span class="tp">dict</span>, page) -> <span class="tp">str</span>:
+    <span class="kw">if</span> name == <span class="st">"navigate"</span>:
+        page.<span class="fn">go</span>(inputs[<span class="st">"url"</span>])              <span class="cm"># go() not goto()</span>
+        <span class="kw">return</span> <span class="st">f"Navigated to </span>{inputs[<span class="st">'url'</span>]}<span class="st">"</span>
+
+    <span class="kw">if</span> name == <span class="st">"click"</span>:
+        el = page.<span class="fn">find</span>({                       <span class="cm"># find() returns element</span>
+            <span class="st">"role"</span>: inputs[<span class="st">"role"</span>],
+            <span class="st">"text"</span>: inputs[<span class="st">"text"</span>]
+        })
+        el.<span class="fn">click</span>()
+        <span class="kw">return</span> <span class="st">f"Clicked </span>{inputs[<span class="st">'role'</span>]}<span class="st"> '</span>{inputs[<span class="st">'text'</span>]}<span class="st">'"</span>
+
+    <span class="kw">if</span> name == <span class="st">"assert_visible"</span>:
+        el = page.<span class="fn">find</span>({<span class="st">"role"</span>: inputs[<span class="st">"role"</span>], <span class="st">"text"</span>: inputs[<span class="st">"text"</span>]})
+        <span class="kw">if</span> el <span class="kw">and</span> el.<span class="fn">is_visible</span>():
+            <span class="kw">return</span> <span class="st">f"VISIBLE: </span>{inputs[<span class="st">'role'</span>]}<span class="st"> '</span>{inputs[<span class="st">'text'</span>]}<span class="st">'"</span>
+        <span class="kw">return</span> <span class="st">f"FAIL: </span>{inputs[<span class="st">'role'</span>]}<span class="st"> not visible"</span>
+
+    <span class="kw">if</span> name == <span class="st">"screenshot"</span>:
+        page.capture.<span class="fn">screenshot</span>(path=inputs[<span class="st">"path"</span>])  <span class="cm"># capture namespace</span>
+        <span class="kw">return</span> <span class="st">f"Screenshot saved to </span>{inputs[<span class="st">'path'</span>]}<span class="st">"</span></pre>
+    </div>
+    <div class="tip" style="margin-top:12px">
+      <div class="tip-lbl">TOOL_DEFINITIONS identical</div>
+      <p>The <code style="font-family:var(--font-m);font-size:12px">TOOL_DEFINITIONS</code> list is a copy of Module 02's. The model calls the <strong>same tool names</strong> — only dispatch() routes them differently.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 06 MCP ARCHITECTURE -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">MCP Approach</div>
+    <h2 class="st">Zero wrapper code.<br><em>Claude calls 85 tools directly.</em></h2>
+    <div class="col-4060" style="align-items:center">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0">
+        <div style="background:rgba(61,106,191,.12);border:1px solid rgba(61,106,191,.25);border-radius:8px;padding:16px 24px;text-align:center;font-family:var(--font-m);font-size:13px;color:#7298d4;width:160px">Claude API</div>
+        <div style="color:var(--fg-3);font-size:20px;padding:8px 0">↕</div>
+        <div style="background:rgba(74,168,165,.1);border:1px solid rgba(74,168,165,.3);border-radius:8px;padding:16px 24px;text-align:center;font-family:var(--font-m);font-size:13px;color:var(--mint-light);width:160px">MCP Server<br><span style="font-size:11px;opacity:.7">(vibium mcp)</span></div>
+        <div style="color:var(--fg-3);font-size:20px;padding:8px 0">↕</div>
+        <div style="background:rgba(74,168,165,.06);border:1px solid rgba(74,168,165,.18);border-radius:8px;padding:16px 24px;text-align:center;font-size:13px;color:var(--fg-2);width:160px">Browser<br><span style="font-family:var(--font-m);font-size:11px;color:var(--fg-3)">85 tools</span></div>
+      </div>
+      <div>
+        <p class="sbody" style="margin-bottom:20px">Instead of wrapping Vibium in <code style="font-family:var(--font-m);font-size:13px">tools.py</code>, connect Claude directly to Vibium's MCP server. All 85 browser tools available — no dispatch function, no tool definitions to write.</p>
+        <div class="code-card">
+          <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">MCP server config</div></div>
+          <pre>{
+  <span class="st">"mcpServers"</span>: {
+    <span class="st">"vibium"</span>: {
+      <span class="st">"command"</span>: <span class="st">"vibium"</span>,
+      <span class="st">"args"</span>: [<span class="st">"mcp"</span>]
+    }
+  }
+}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 PROGRAMMATIC vs MCP TABLE -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Choosing an Approach</div>
+    <h2 class="st">Programmatic vs MCP —<br><em>when to use each.</em></h2>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr><th></th><th>Programmatic API</th><th>MCP</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="hi">tools.py</td><td class="yes">You write it (full control)</td><td class="yes">Not needed</td></tr>
+          <tr><td class="hi">Tool names</td><td>You define them</td><td>Vibium's convention (browser_*)</td></tr>
+          <tr><td class="hi">Tool count</td><td>10 (custom)</td><td class="yes">85 (full API)</td></tr>
+          <tr><td class="hi">Framework</td><td class="yes">Any Python / TS script</td><td>Claude Desktop or client.beta</td></tr>
+          <tr><td class="hi">Custom dispatch logic</td><td class="yes">Yes — add transforms, logging</td><td class="no">No</td></tr>
+          <tr><td class="hi">Best for</td><td>Production apps, CI pipelines</td><td>Rapid prototyping, Claude Desktop</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- 08 MCP STANDALONE CLIENT -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">MCP · Standalone Python Client</div>
+    <h2 class="st">One API call.<br><em>No loop required.</em></h2>
+    <div class="code-card" style="flex:1">
+      <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">mcp/run.py</div></div>
+      <pre><span class="kw">import</span> anthropic
+
+client = anthropic.<span class="fn">Anthropic</span>()
+
+response = client.beta.messages.<span class="fn">create</span>(
+    model=<span class="st">"claude-sonnet-4-6"</span>,
+    max_tokens=<span class="nu">4096</span>,
+    system=SYSTEM_PROMPT,
+    mcp_servers=[{
+        <span class="st">"type"</span>: <span class="st">"stdio"</span>,
+        <span class="st">"command"</span>: <span class="st">"vibium"</span>,
+        <span class="st">"args"</span>: [<span class="st">"mcp"</span>],
+    }],
+    messages=[{ <span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: TASK }],
+    betas=[<span class="st">"mcp-client-2025-04-04"</span>],
+)
+
+<span class="cm"># The beta API handles the tool-use loop internally.
+# No while True. No dispatch. One call.</span></pre>
+    </div>
+    <div class="tip" style="margin-top:12px">
+      <div class="tip-lbl">What happens internally</div>
+      <p>The Anthropic API spawns the Vibium MCP server, handles the tool-use loop, and returns when the task is complete. <strong>Zero orchestration code in your script.</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- 09 find() BEHAVIOR -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Vibium · Critical Behavior</div>
+    <h2 class="st">Always pass <em>role</em><br>to find().</h2>
+    <div class="col-5050" style="align-items:start">
+      <div>
+        <h3 class="sst" style="margin-bottom:14px">❌ Text only — unreliable</h3>
+        <div class="code-card" style="margin-bottom:12px">
+          <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+          <pre>page.<span class="fn">find</span>({ <span class="st">"text"</span>: <span class="st">"Walk the dog"</span> })
+<span class="cm"># Returns the OUTERMOST element containing
+# that text — could be &lt;ul&gt; or &lt;section&gt;
+# Clicking it does nothing useful</span></pre>
+        </div>
+        <div style="padding:12px 14px;background:rgba(212,85,42,.08);border:1px solid rgba(212,85,42,.2);border-radius:6px;font-size:14px;color:var(--fg-2)">The outermost container element — not what you wanted to click.</div>
+      </div>
+      <div>
+        <h3 class="sst" style="margin-bottom:14px">✓ Role + text — correct</h3>
+        <div class="code-card" style="margin-bottom:12px">
+          <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+          <pre>page.<span class="fn">find</span>({
+  <span class="st">"role"</span>: <span class="st">"listitem"</span>,
+  <span class="st">"text"</span>: <span class="st">"Walk the dog"</span>
+})
+<span class="cm"># Returns the specific &lt;li&gt; element</span></pre>
+        </div>
+        <div style="padding:12px 14px;background:rgba(74,168,165,.08);border:1px solid rgba(74,168,165,.2);border-radius:6px;font-size:14px;color:var(--fg-2)">The exact <code style="font-family:var(--font-m);font-size:12px">&lt;li&gt;</code> list item — correct and clickable.</div>
+      </div>
+    </div>
+    <div class="tip" style="margin-top:16px">
+      <div class="tip-lbl">System prompt reinforcement</div>
+      <p>The system prompt says "prefer locating by ARIA role + visible text." With Vibium's <code style="font-family:var(--font-m);font-size:12px">find()</code>, this isn't just good practice — <strong>it's required for reliable targeting.</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- 10 TYPESCRIPT -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">TypeScript</div>
+    <h2 class="st">Typed Vibium interfaces,<br><em>async find().</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">tools.ts</div></div>
+        <pre><span class="kw">import</span> { browser, <span class="kw">type</span> <span class="tp">Page</span> } <span class="kw">from</span> <span class="st">"vibium"</span>;
+
+<span class="kw">if</span> (name === <span class="st">"click"</span>) {
+    <span class="kw">const</span> el = <span class="kw">await</span> page.<span class="fn">find</span>({
+        role: inputs.role <span class="kw">as</span> <span class="tp">string</span>,
+        text: inputs.text <span class="kw">as</span> <span class="tp">string</span>
+    });
+    <span class="kw">await</span> el.<span class="fn">click</span>();
+    <span class="kw">return</span> <span class="st">`Clicked </span>${inputs.role}<span class="st"> '</span>${inputs.text}<span class="st">'`</span>;
+}</pre>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">agent.ts — browser setup</div></div>
+        <pre><span class="cm">// async start() — no context manager</span>
+<span class="kw">const</span> bro = <span class="kw">await</span> browser.<span class="fn">start</span>({ headless });
+<span class="kw">const</span> page = <span class="kw">await</span> bro.<span class="fn">newPage</span>();
+
+<span class="cm">// ... identical loop ...</span>
+
+<span class="kw">await</span> bro.<span class="fn">close</span>();</pre>
+      </div>
+    </div>
+    <p class="sbody" style="margin-top:16px">Two awaits where Playwright chained in one — <code style="font-family:var(--font-m);font-size:13px">find()</code> is async, then <code style="font-family:var(--font-m);font-size:13px">click()</code> on the returned element. Otherwise identical structure.</p>
+  </div>
+</section>
+
+<!-- 11 WHEN TO CHOOSE VIBIUM -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Decision Guide</div>
+    <h2 class="st">When to choose<br><em>Vibium.</em></h2>
+    <ul class="pts" style="flex:1;align-content:start">
+      <li><strong>Agent is the primary browser consumer</strong> — not also writing traditional tests. Vibium's <code style="font-family:var(--font-m);font-size:14px">find({role, text})</code> is more expressive than <code style="font-family:var(--font-m);font-size:14px">getByRole(role, {name: text})</code> for AI call sites.</li>
+      <li><strong>MCP integration needed</strong> — connect Claude Desktop or another AI interface to the browser. Vibium is the fastest path: one config, 85 tools available.</li>
+      <li><strong>Rich capture needs</strong> — screenshots, PDFs, video recordings. Vibium's <code style="font-family:var(--font-m);font-size:14px">page.capture.*</code> namespace is well-organized.</li>
+      <li><strong>Chrome-first workflow</strong> — Vibium covers Chromium comprehensively. For Firefox cross-browser, see Module 04 (Selenium BiDi).</li>
+      <li><strong>Rapid prototyping</strong> — MCP approach means zero wrapper code, fastest path from idea to running agent.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 12 KEY TAKEAWAYS -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Module 03 · Key Takeaways</div>
+    <h2 class="st">Five things<br><em>to carry forward.</em></h2>
+    <div style="flex:1">
+      <div class="take-row">
+        <div class="take-n">1</div>
+        <div class="take-body">
+          <div class="take-title">The loop doesn't change when you change drivers</div>
+          <div class="take-sub">Only dispatch() changes. The model sees identical tool names and result strings.</div>
+        </div>
+      </div>
+      <div class="take-row">
+        <div class="take-n">2</div>
+        <div class="take-body">
+          <div class="take-title">Vibium API delta is small</div>
+          <div class="take-sub">go(), find({role, text}), capture.screenshot(). Ten minutes with the docs and you know it.</div>
+        </div>
+      </div>
+      <div class="take-row">
+        <div class="take-n">3</div>
+        <div class="take-body">
+          <div class="take-title">MCP removes the wrapper layer entirely</div>
+          <div class="take-sub">For prototyping and Claude Desktop use cases, one API call handles the entire loop.</div>
+        </div>
+      </div>
+      <div class="take-row">
+        <div class="take-n">4</div>
+        <div class="take-body">
+          <div class="take-title">Always pass role to find()</div>
+          <div class="take-sub">Text-only find() returns the outermost container — almost never what you want for interactive elements.</div>
+        </div>
+      </div>
+      <div class="take-row">
+        <div class="take-n">5</div>
+        <div class="take-body">
+          <div class="take-title">Return strings must stay consistent across modules</div>
+          <div class="take-sub">The model builds pattern-matching intuitions from tool result strings. Keep the phrasing identical across driver implementations.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 EVAL CHECKPOINT -->
+<section class="slide">
+  <div class="si">
+    <div style="font-family:var(--font-m);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);margin-bottom:20px">eval checkpoint</div>
+    <h2 style="font-family:var(--font-d);font-size:clamp(28px,3vw,44px);margin-bottom:24px">Eval Your <em>Vibium Agent</em></h2>
+    <p style="color:var(--fg-2);margin-bottom:24px">Vibium-specific traps to catch in eval:</p>
+    <div class="pts" style="margin-bottom:24px">
+      <div class="pt"><span class="pt-n">1</span><div><strong>find() selector quality</strong> — Trajectory eval should flag any <code style="font-family:var(--font-m);background:rgba(255,255,255,0.08);padding:2px 5px;border-radius:4px">find({text})</code>-only call on an interactive element. The correct form is <code style="font-family:var(--font-m);background:rgba(255,255,255,0.08);padding:2px 5px;border-radius:4px">find({role, text})</code>.</div></div>
+      <div class="pt"><span class="pt-n">2</span><div><strong>MCP consistency</strong> — Run the same task twice via MCP and via programmatic API. Finding text should match ≥ 80% of keywords in both modes.</div></div>
+      <div class="pt"><span class="pt-n">3</span><div><strong>Dialog handling</strong> — For pages with alerts, verify <code style="font-family:var(--font-m);background:rgba(255,255,255,0.08);padding:2px 5px;border-radius:4px">dialog_accept</code> / <code style="font-family:var(--font-m);background:rgba(255,255,255,0.08);padding:2px 5px;border-radius:4px">dialog_dismiss</code> appear in the tool call sequence before any post-dialog <code style="font-family:var(--font-m);background:rgba(255,255,255,0.08);padding:2px 5px;border-radius:4px">find</code>.</div></div>
+    </div>
+    <div class="tip">Vibium's MCP mode skips the agent loop — eval it separately. MCP finding = single tool call output; programmatic = multi-turn reasoning.</div>
+  </div>
+</section>
+
+<!-- 14 NEXT -->
+<section class="slide s-next">
+  <div class="si">
+    <div style="text-align:center;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px">
+      <div class="next-label">Up next</div>
+      <div class="next-arr">→</div>
+      <div class="next-title">Module 04: <em>Selenium WebDriver BiDi</em></div>
+      <div class="next-sub" style="max-width:500px">Two new things: cross-browser support (Chrome AND Firefox with one flag) and three BiDi-specific tools — console logs, JavaScript execution, and network interception.</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:8px">
+        <span class="pill">XPath union strategy</span>
+        <span class="pill">get_browser_logs</span>
+        <span class="pill">execute_script</span>
+        <span class="pill">Chrome + Firefox</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+<button class="nav-btn prev dim" id="prevBtn">←</button>
+<button class="nav-btn next" id="nextBtn">→</button>
+<script>
+const slides=document.querySelectorAll('.slide'),total=slides.length;let cur=0;
+function show(n){slides[cur].classList.remove('active');cur=Math.max(0,Math.min(n,total-1));slides[cur].classList.add('active');document.getElementById('sn').textContent=`${cur+1} / ${total}`;document.getElementById('pf').style.width=`${((cur+1)/total)*100}%`;document.getElementById('prevBtn').classList.toggle('dim',cur===0);document.getElementById('nextBtn').classList.toggle('dim',cur===total-1);}
+function next(){show(cur+1);}function prev(){show(cur-1);}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){e.preventDefault();next();}if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();prev();}if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}});
+document.getElementById('deck').addEventListener('click',e=>{if(!e.target.closest('.nav-btn'))next();});
+document.getElementById('prevBtn').addEventListener('click',e=>{e.stopPropagation();prev();});
+document.getElementById('nextBtn').addEventListener('click',e=>{e.stopPropagation();next();});
+</script>
+</body>
+</html>

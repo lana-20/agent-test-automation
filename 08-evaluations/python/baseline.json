@@ -1,0 +1,6 @@
+{
+  "det_pass_rate": 0.3,
+  "llm_avg_overall": 0.28,
+  "traj_pass_rate": 0.5,
+  "hallucination_rate": 0.0
+}

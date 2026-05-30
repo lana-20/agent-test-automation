@@ -1,8 +1,29 @@
+# secrets
 .env
+.env.*
+*.env
+**/.env
+**/.env.*
+
+# python
 __pycache__/
 *.pyc
 .venv/
+
+# node
 node_modules/
 dist/
+
+# test artifacts
 screenshots/
 *.png
+transcripts/
+06-full-framework/python/report.json
+06-full-framework/python/report.md
+
+# eval generated outputs
+08-evaluations/python/current.json
+08-evaluations/python/eval_report.md
+
+# OS
+.DS_Store

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Module 07 — CI/CD · Agent-Driven Test Automation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1a2a;--bg-dark:#0a1220;--card:#13243a;--card-dark:#0d1e30;
+  --off-white:#f5f0eb;--coral:#d4552a;--coral-light:#e8785a;
+  --mint:#4aa8a5;--mint-light:#9dbfb8;--gold:#b8862a;--gold-light:#d4a85a;
+  --violet:#7455bf;--violet-light:#9e85d4;--steel:#3d6abf;--steel-light:#7298d4;
+  --border:rgba(255,255,255,0.08);--border-mid:rgba(255,255,255,0.14);
+  --fg-2:rgba(245,240,235,0.65);--fg-3:rgba(245,240,235,0.38);
+  --accent:var(--coral);
+  --font-d:'Playfair Display',Georgia,serif;--font-b:'Inter',-apple-system,sans-serif;--font-m:'JetBrains Mono',monospace;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg-dark);color:var(--off-white)}
+body{font-family:var(--font-b)}
+.progress{position:fixed;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.07);z-index:200}
+.progress-fill{height:100%;background:var(--accent);transition:width .35s ease}
+.deck-hdr{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:16px 48px 0;z-index:199;pointer-events:none}
+.module-tag,.slide-num{font-family:var(--font-m);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-3)}
+.deck{width:100vw;height:100vh;position:relative}
+.slide{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .28s;overflow:hidden}
+.slide.active{opacity:1;pointer-events:all}
+.si{height:100%;display:flex;flex-direction:column;padding:72px 100px 76px;max-width:1480px;margin:0 auto}
+.nav-btn{position:fixed;bottom:28px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--fg-2);border-radius:50%;width:42px;height:42px;font-size:17px;cursor:pointer;transition:all .2s;z-index:200;display:flex;align-items:center;justify-content:center;user-select:none}
+.nav-btn:hover{background:rgba(255,255,255,0.11);color:var(--off-white)}
+.nav-btn.prev{left:36px}.nav-btn.next{right:36px}.nav-btn.dim{opacity:.28;pointer-events:none}
+.eyebrow{font-family:var(--font-m);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;opacity:.9}
+h2.st{font-family:var(--font-d);font-size:clamp(30px,3.2vw,48px);line-height:1.1;letter-spacing:-.02em;margin-bottom:32px}
+h2.st em{font-style:italic;color:var(--accent)}
+.sbody{font-size:17px;line-height:1.65;color:var(--fg-2);max-width:780px}
+.sbody strong{color:var(--off-white)}
+.pts{list-style:none}
+.pts li{display:flex;gap:14px;align-items:flex-start;margin-bottom:15px;font-size:16px;line-height:1.5;color:var(--fg-2)}
+.pts li::before{content:'—';color:var(--accent);font-weight:600;flex-shrink:0;margin-top:1px}
+.pts li strong{color:var(--off-white)}
+.code-card{background:var(--card-dark);border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0}
+.code-top{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px}
+.dot{width:11px;height:11px;border-radius:50%}.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+.code-lbl{margin-left:auto;font-family:var(--font-m);font-size:10.5px;color:var(--fg-3);letter-spacing:.1em}
+pre{padding:20px 24px;font-family:var(--font-m);font-size:13px;line-height:1.75;overflow-x:auto;white-space:pre}
+.kw{color:#e8785a}.fn{color:#7298d4}.st{color:#9dbfb8}.cm{color:rgba(245,240,235,.32);font-style:italic}.tp{color:#9e85d4}.nu{color:#d4a85a}
+.tbl-wrap{overflow:auto}
+.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th{font-family:var(--font-m);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-3);padding:10px 14px;border-bottom:1px solid var(--border-mid);text-align:left}
+.tbl td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--fg-2);vertical-align:top;line-height:1.4}
+.tbl tr:last-child td{border-bottom:none}.tbl tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+.yes{color:#4aa8a5;font-weight:600}.no{color:var(--fg-3)}.hi{color:var(--off-white);font-weight:600}
+.cols-2{display:grid;grid-template-columns:1fr 1fr;gap:32px;flex:1}
+.col-5050{display:grid;grid-template-columns:1fr 1fr;gap:36px;flex:1}
+.col-4060{display:grid;grid-template-columns:40fr 60fr;gap:36px;flex:1}
+.tip{background:rgba(212,85,42,.07);border:1px solid rgba(212,85,42,.28);border-radius:8px;padding:16px 20px;margin-top:auto}
+.tip-lbl{font-family:var(--font-m);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--accent);margin-bottom:7px}
+.tip p{font-size:15px;color:var(--fg-2);line-height:1.5}.tip p strong{color:var(--off-white)}
+.warn{background:rgba(212,85,42,.1);border:1px solid rgba(212,85,42,.35);border-radius:8px;padding:14px 18px}
+.warn-lbl{font-family:var(--font-m);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--coral-light);margin-bottom:7px}
+.warn p{font-size:14.5px;color:var(--fg-2);line-height:1.5}.warn p strong{color:var(--off-white)}
+.take-row{display:flex;gap:18px;align-items:flex-start;margin-bottom:16px}
+.take-n{font-family:var(--font-d);font-size:42px;font-weight:400;color:var(--accent);opacity:.22;line-height:.9;flex-shrink:0;width:46px}
+.take-title{font-size:16px;font-weight:600;color:var(--off-white);margin-bottom:3px}
+.take-sub{font-size:14px;color:var(--fg-2);line-height:1.5}
+.s-title .si{align-items:center;justify-content:center;text-align:center}
+.title-bg-num{font-family:var(--font-d);font-size:240px;font-weight:400;color:var(--coral);opacity:.04;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;line-height:1;user-select:none}
+.course-label{font-family:var(--font-m);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--fg-3);margin-bottom:28px}
+.title-module{font-family:var(--font-m);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;opacity:.9}
+.title-h1{font-family:var(--font-d);font-size:clamp(36px,4.5vw,62px);line-height:1.05;letter-spacing:-.03em;margin-bottom:20px}
+.title-h1 em{font-style:italic;color:var(--accent)}
+.title-sub{font-size:17px;color:var(--fg-2);margin-bottom:40px}
+.pill{font-family:var(--font-m);font-size:11px;letter-spacing:.14em;padding:6px 14px;border:1px solid var(--border-mid);border-radius:999px;color:var(--fg-2)}
+.title-pills{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+/* Complete slide */
+.s-complete .si{align-items:center;justify-content:center;text-align:center}
+.complete-ring{width:120px;height:120px;border-radius:50%;border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 28px;animation:ring-pulse 3s ease-in-out infinite;font-size:48px}
+@keyframes ring-pulse{0%,100%{box-shadow:0 0 0 0 rgba(212,85,42,.3),0 0 20px rgba(212,85,42,.2)}50%{box-shadow:0 0 0 16px rgba(212,85,42,.0),0 0 30px rgba(212,85,42,.35)}}
+.complete-h{font-family:var(--font-d);font-size:52px;margin-bottom:12px}
+.complete-h em{font-style:italic;color:var(--accent)}
+.complete-sub{font-size:17px;color:var(--fg-2);max-width:580px;margin:0 auto 32px;line-height:1.65}
+.mod-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.mod-badge{font-family:var(--font-m);font-size:11px;padding:6px 14px;border:1px solid rgba(212,85,42,.35);border-radius:999px;color:var(--fg-2);display:flex;align-items:center;gap:6px}
+.mod-badge::before{content:'✓';color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="progress"><div class="progress-fill" id="pf" style="width:7.69%"></div></div>
+<div class="deck-hdr">
+  <span class="module-tag">Module 07 · CI/CD Integration</span>
+  <span class="slide-num" id="sn">1 / 13</span>
+</div>
+<div class="deck" id="deck">
+
+<!-- 01 TITLE -->
+<section class="slide s-title active">
+  <div class="title-bg-num">07</div>
+  <div class="si">
+    <div class="course-label">Agent-Driven Test Automation</div>
+    <div class="title-module">Module 07</div>
+    <h1 class="title-h1">CI/CD<br><em>Integration</em></h1>
+    <p class="title-sub">GitHub Actions. Headless. Parallel. Results in the PR before you open an artifact.</p>
+    <div class="title-pills">
+      <span class="pill">agents.yml</span><span class="pill">if: always()</span>
+      <span class="pill">$GITHUB_STEP_SUMMARY</span>
+      <span class="pill">fail-fast: false</span><span class="pill">~29 min</span>
+    </div>
+  </div>
+</section>
+
+<!-- 02 LOCAL VS CI -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">The Two Differences</div>
+    <h2 class="st">Two things change<br><em>in CI. Both already solved.</em></h2>
+    <div class="tbl-wrap" style="margin-bottom:20px">
+      <table class="tbl">
+        <thead><tr><th></th><th>Local</th><th>CI (GitHub Actions)</th><th>Already handled?</th></tr></thead>
+        <tbody>
+          <tr><td class="hi">Browser</td><td>Headed (visible window)</td><td>Headless (no display)</td><td class="yes">--headless flag on every module</td></tr>
+          <tr><td class="hi">API key</td><td>.env file</td><td>GitHub Secret → env var</td><td class="yes">Same env var name: ANTHROPIC_API_KEY</td></tr>
+          <tr><td class="hi">Report</td><td>Terminal output</td><td>Artifact + step summary</td><td>Module 07 adds this</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sbody">The code doesn't change between local and CI. Only the execution environment changes — and both differences are handled by configuration, not code.</p>
+  </div>
+</section>
+
+<!-- 03 AGENTS.YML TRIGGER + JOBS -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">agents.yml · Trigger and Jobs</div>
+    <h2 class="st">Two gates.<br><em>Before and after merge.</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">agents.yml — trigger</div></div>
+        <pre><span class="kw">on</span>:
+  <span class="kw">push</span>:
+    <span class="kw">branches</span>: [main]
+    <span class="cm"># Runs after every merge to main</span>
+  <span class="kw">pull_request</span>:
+    <span class="kw">branches</span>: [main]
+    <span class="cm"># Runs before a PR can merge</span></pre>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">agents.yml — jobs</div></div>
+        <pre><span class="kw">jobs</span>:
+  <span class="kw">python</span>:
+    <span class="kw">name</span>: Python (Module 06)
+    <span class="kw">runs-on</span>: ubuntu-latest
+    <span class="kw">defaults</span>:
+      <span class="kw">run</span>:
+        <span class="kw">working-directory</span>: <span class="st">06-full-framework/python</span>
+    <span class="cm"># ↑ No cd needed in every step</span>
+
+  <span class="kw">typescript</span>:
+    <span class="kw">name</span>: TypeScript (Module 06)
+    <span class="kw">runs-on</span>: ubuntu-latest
+    <span class="kw">defaults</span>:
+      <span class="kw">run</span>:
+        <span class="kw">working-directory</span>: <span class="st">06-full-framework/typescript</span></pre>
+      </div>
+    </div>
+    <p class="sbody" style="margin-top:16px">Two jobs run in parallel. One for Python, one for TypeScript. Both report to the same PR check.</p>
+  </div>
+</section>
+
+<!-- 04 INSTALL + --with-deps -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">agents.yml · Install Steps</div>
+    <h2 class="st"><code style="font-family:var(--font-m);font-size:0.7em">--with-deps</code> is not<br><em>optional on Ubuntu.</em></h2>
+    <div class="code-card" style="margin-bottom:16px">
+      <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">agents.yml — install steps</div></div>
+      <pre>- <span class="kw">uses</span>: actions/setup-python@v5
+  <span class="kw">with</span>:
+    <span class="kw">python-version</span>: <span class="st">"3.11"</span>
+    <span class="kw">cache</span>: pip
+    <span class="kw">cache-dependency-path</span>: <span class="st">06-full-framework/python/requirements.txt</span>
+    <span class="cm"># ↑ Dependencies cached by requirements.txt hash → saves 20-30s</span>
+
+- <span class="kw">name</span>: Install dependencies
+  <span class="kw">run</span>: pip install -r requirements.txt
+
+- <span class="kw">name</span>: Install Chromium
+  <span class="kw">run</span>: playwright install chromium --with-deps
+  <span class="cm">  # ↑  --with-deps installs system libraries Chromium needs on Ubuntu
+  #     WITHOUT it: browser starts, then crashes on missing shared objects
+  #     This is the most common CI setup mistake</span>
+
+- <span class="kw">name</span>: Run test suite
+  <span class="kw">run</span>: python run.py --headless
+  <span class="kw">env</span>:
+    <span class="kw">ANTHROPIC_API_KEY</span>: ${{ secrets.ANTHROPIC_API_KEY }}</pre>
+    </div>
+    <div class="warn">
+      <div class="warn-lbl">Warning</div>
+      <p><code style="font-family:var(--font-m);font-size:12px">playwright install chromium</code> (without <code style="font-family:var(--font-m);font-size:12px">--with-deps</code>) will <strong>silently fail on GitHub's Ubuntu runners</strong>. The browser starts and immediately crashes. Always use <code style="font-family:var(--font-m);font-size:12px">--with-deps</code>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 05 IF: ALWAYS() -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">agents.yml · Artifact Upload</div>
+    <h2 class="st">if: always() —<br><em>you need the report most when it fails.</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div>
+        <div class="code-card" style="margin-bottom:14px">
+          <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">agents.yml</div></div>
+          <pre>- <span class="kw">name</span>: Write step summary
+  <span class="kw">if</span>: always()
+  <span class="kw">run</span>: |
+    python step-summary.py report.json \
+      >> $GITHUB_STEP_SUMMARY
+
+- <span class="kw">name</span>: Upload reports
+  <span class="kw">uses</span>: actions/upload-artifact@v4
+  <span class="kw">if</span>: always()
+  <span class="kw">with</span>:
+    <span class="kw">name</span>: report-python
+    <span class="kw">path</span>: |
+      06-full-framework/python/report.md
+      06-full-framework/python/report.json</pre>
+        </div>
+      </div>
+      <div>
+        <div style="padding:16px 18px;background:var(--card);border:1px solid var(--border);border-radius:8px;margin-bottom:14px">
+          <div style="font-weight:600;color:var(--off-white);margin-bottom:6px">Default behavior (without if: always())</div>
+          <div style="font-size:14px;color:var(--fg-2)">If the test run step fails, GitHub skips all subsequent steps. <strong>No artifact. No summary. Nothing to diagnose the failure with.</strong></div>
+        </div>
+        <div style="padding:16px 18px;background:rgba(74,168,165,.08);border:1px solid rgba(74,168,165,.22);border-radius:8px">
+          <div style="font-weight:600;color:var(--off-white);margin-bottom:6px">With if: always()</div>
+          <div style="font-size:14px;color:var(--fg-2)">Upload and summary steps run regardless of whether the suite passed or failed. <strong>Artifact available exactly when you need it.</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 STEP SUMMARY SCRIPT -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">$GITHUB_STEP_SUMMARY</div>
+    <h2 class="st">Results in the PR.<br><em>No artifacts to open.</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">step-summary.py</div></div>
+        <pre><span class="kw">with</span> <span class="fn">open</span>(path) <span class="kw">as</span> f:
+    report = json.<span class="fn">load</span>(f)
+
+summary = report[<span class="st">"summary"</span>]
+icon = <span class="st">"✅"</span> <span class="kw">if</span> summary[<span class="st">"failed"</span>] == <span class="nu">0</span> <span class="kw">else</span> <span class="st">"❌"</span>
+
+lines = [
+    <span class="st">f"## {icon} Test Results"</span>,
+    <span class="st">"| Total | Passed | Failed | Bugs |"</span>,
+    <span class="st">f"| {summary['total']} | ..."</span>,
+    <span class="st">"### Scenarios"</span>,
+    <span class="st">"| ID | Title | Result |"</span>,
+]
+<span class="kw">for</span> r <span class="kw">in</span> report[<span class="st">"results"</span>]:
+    status = <span class="st">"✅ PASS"</span> <span class="kw">if</span> r[<span class="st">"passed"</span>] <span class="kw">else</span> <span class="st">"❌ FAIL"</span>
+    lines.<span class="fn">append</span>(<span class="st">f"| {r['scenarioId']} | {r['title']} | {status} |"</span>)
+
+<span class="fn">print</span>(<span class="st">"\n"</span>.<span class="fn">join</span>(lines))
+<span class="cm"># piped to $GITHUB_STEP_SUMMARY</span></pre>
+      </div>
+      <div>
+        <p class="sbody" style="margin-bottom:16px">Pipe the output to <code style="font-family:var(--font-m);font-size:13px">$GITHUB_STEP_SUMMARY</code> — GitHub renders it as Markdown in the workflow summary page.</p>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;font-family:var(--font-m);font-size:12.5px">
+          <div style="color:var(--mint);margin-bottom:8px">✅ Test Results</div>
+          <div style="color:var(--fg-3);font-size:11px;margin-bottom:6px">Total · Passed · Failed · Bugs</div>
+          <div style="color:var(--fg-2);font-size:11px;margin-bottom:10px">5 &nbsp;·&nbsp; 5 &nbsp;·&nbsp; 0 &nbsp;·&nbsp; 0</div>
+          <div style="color:var(--fg-3);font-size:11px;margin-bottom:6px">Scenarios</div>
+          <div style="color:var(--fg-2);font-size:11px;line-height:1.8">
+            TC-01 · Add and verify todos &nbsp;✅ PASS<br>
+            TC-02 · Mark complete, filter &nbsp;✅ PASS<br>
+            TC-03 · Delete, verify count &nbsp;✅ PASS
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 MATRIX + FAIL-FAST -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">agents-smoke.yml · Matrix Strategy</div>
+    <h2 class="st">All four implementations,<br><em>one job definition.</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">agents-smoke.yml</div></div>
+        <pre><span class="kw">on</span>: workflow_dispatch  <span class="cm"># manual only</span>
+
+<span class="kw">jobs</span>:
+  <span class="kw">test</span>:
+    <span class="kw">strategy</span>:
+      <span class="kw">fail-fast</span>: <span class="nu">false</span>  <span class="cm"># all jobs finish</span>
+      <span class="kw">matrix</span>:
+        <span class="kw">include</span>:
+          - <span class="kw">name</span>: Playwright (Python)
+            <span class="kw">dir</span>: <span class="st">02-single-agent-playwright/python</span>
+            <span class="kw">run</span>: python run.py --headless
+
+          - <span class="kw">name</span>: Playwright (TypeScript)
+            <span class="kw">dir</span>: <span class="st">02-single-agent-playwright/typescript</span>
+            <span class="kw">run</span>: npm run start:headless
+
+          - <span class="kw">name</span>: Vibium (Python)
+            <span class="kw">dir</span>: <span class="st">03-single-agent-vibium/python</span>
+            <span class="kw">run</span>: python run.py --headless
+
+          - <span class="kw">name</span>: Selenium BiDi Chrome (Python)
+            <span class="kw">dir</span>: <span class="st">04-single-agent-selenium-bidi/python</span>
+            <span class="kw">run</span>: python run.py chrome</pre>
+      </div>
+      <div>
+        <div class="tip" style="margin-bottom:14px;margin-top:0">
+          <div class="tip-lbl">fail-fast: false</div>
+          <p>Default behaviour: if one matrix job fails, GitHub cancels the rest. You get a partial picture. <strong>fail-fast: false lets all jobs run to completion</strong> — full cross-implementation report.</p>
+        </div>
+        <div class="tip" style="margin-top:0">
+          <div class="tip-lbl">workflow_dispatch only</div>
+          <p>The smoke suite runs all 4 implementations. Run it <strong>manually after dependency updates</strong>, not on every push — it consumes more API tokens.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 08 SETUP + BRANCH PROTECTION -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Setup</div>
+    <h2 class="st">One secret to add.<br><em>One ruleset to enable.</em></h2>
+    <div class="cols-2" style="align-items:start">
+      <div>
+        <h3 style="font-family:var(--font-d);font-size:22px;margin-bottom:16px">Adding the Secret</h3>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="width:26px;height:26px;border-radius:50%;background:rgba(212,85,42,.2);border:1px solid rgba(212,85,42,.35);display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:11px;color:var(--accent);flex-shrink:0">1</div>
+            <div style="font-size:14px;color:var(--fg-2)">Repository → Settings</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="width:26px;height:26px;border-radius:50%;background:rgba(212,85,42,.2);border:1px solid rgba(212,85,42,.35);display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:11px;color:var(--accent);flex-shrink:0">2</div>
+            <div style="font-size:14px;color:var(--fg-2)">Secrets and variables → Actions</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="width:26px;height:26px;border-radius:50%;background:rgba(212,85,42,.2);border:1px solid rgba(212,85,42,.35);display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:11px;color:var(--accent);flex-shrink:0">3</div>
+            <div style="font-size:14px;color:var(--fg-2)">New repository secret</div>
+          </div>
+          <div style="margin-top:4px;padding:12px 14px;background:var(--card-dark);border:1px solid var(--border);border-radius:7px;font-family:var(--font-m);font-size:12.5px">
+            <div style="color:var(--fg-3);margin-bottom:4px">Name (exact)</div>
+            <div style="color:var(--off-white)">ANTHROPIC_API_KEY</div>
+            <div style="color:var(--fg-3);margin-top:8px;margin-bottom:4px">Secret</div>
+            <div style="color:var(--fg-3)">sk-ant-api03-...</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-family:var(--font-d);font-size:22px;margin-bottom:16px">Branch Protection</h3>
+        <p class="sbody" style="margin-bottom:16px;font-size:15px">Make agent tests a hard gate. A PR cannot merge to main if either job fails.</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="width:26px;height:26px;border-radius:50%;background:rgba(212,85,42,.2);border:1px solid rgba(212,85,42,.35);display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:11px;color:var(--accent);flex-shrink:0;margin-top:2px">1</div>
+            <div style="font-size:14px;color:var(--fg-2)">Settings → Branches → Add branch ruleset for main</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="width:26px;height:26px;border-radius:50%;background:rgba(212,85,42,.2);border:1px solid rgba(212,85,42,.35);display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:11px;color:var(--accent);flex-shrink:0;margin-top:2px">2</div>
+            <div style="font-size:14px;color:var(--fg-2)">Enable "Require status checks to pass before merging"</div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start">
+            <div style="width:26px;height:26px;border-radius:50%;background:rgba(212,85,42,.2);border:1px solid rgba(212,85,42,.35);display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:11px;color:var(--accent);flex-shrink:0;margin-top:2px">3</div>
+            <div style="font-size:14px;color:var(--fg-2)">Add: "python (Module 06)" and "typescript (Module 06)"</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 09 COST MANAGEMENT -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Cost Management</div>
+    <h2 class="st">Run only when<br><em>code actually changes.</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">agents.yml — paths filter</div></div>
+        <pre><span class="kw">on</span>:
+  <span class="kw">push</span>:
+    <span class="kw">branches</span>: [main]
+    <span class="kw">paths</span>:
+      - <span class="st">"0[2-6]-**"</span>     <span class="cm"># modules 02-06</span>
+      - <span class="st">".github/**"</span>    <span class="cm"># workflow files</span>
+      - <span class="st">"07-ci-cd/**"</span>   <span class="cm"># scripts</span>
+  <span class="kw">pull_request</span>:
+    <span class="kw">branches</span>: [main]
+    <span class="kw">paths</span>:
+      - <span class="st">"0[2-6]-**"</span>
+      - <span class="st">".github/**"</span>
+
+<span class="cm"># README change → no run
+# Transcript change → no run
+# requirements.txt change → runs</span></pre>
+      </div>
+      <div>
+        <p class="sbody" style="margin-bottom:20px">A typical Module 06 run — five scenarios, no failures:</p>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;margin-bottom:14px">
+          <div style="font-family:var(--font-m);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3);margin-bottom:10px">Token estimate per run</div>
+          <div style="font-size:14px;color:var(--fg-2);line-height:1.9">
+            1 Architect call &nbsp;→ ~800 tokens<br>
+            5 Runner calls &nbsp;→ ~3,000 × 5 = 15,000<br>
+            Asserter (0 failures) &nbsp;→ 0<br>
+            <strong style="color:var(--off-white)">Total: ~16,000 tokens</strong><br>
+            Python + TypeScript together: ~34,000
+          </div>
+        </div>
+        <div class="tip" style="margin-top:0">
+          <div class="tip-lbl">At current Sonnet pricing</div>
+          <p>~$0.03 per push. ~$3 per 100 pushes. <strong>Paths filter keeps it from running on docs changes.</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 KEY TAKEAWAYS -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Module 07 · Key Takeaways</div>
+    <h2 class="st">Six things<br><em>to carry forward.</em></h2>
+    <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="take-row"><div class="take-n">1</div><div><div class="take-title">--headless and ANTHROPIC_API_KEY are the only differences</div><div class="take-sub">The code is identical between local and CI. Configuration handles both.</div></div></div>
+      <div class="take-row"><div class="take-n">2</div><div><div class="take-title">--with-deps on Ubuntu — always</div><div class="take-sub">Without it the browser crashes on missing system libraries. Not optional.</div></div></div>
+      <div class="take-row"><div class="take-n">3</div><div><div class="take-title">if: always() on artifact upload and summary</div><div class="take-sub">You need the report most when the run fails. Default skipping behaviour is exactly wrong.</div></div></div>
+      <div class="take-row"><div class="take-n">4</div><div><div class="take-title">fail-fast: false for cross-implementation matrix</div><div class="take-sub">Get the full picture — all implementations finish even if one fails.</div></div></div>
+      <div class="take-row"><div class="take-n">5</div><div><div class="take-title">$GITHUB_STEP_SUMMARY renders Markdown in the PR</div><div class="take-sub">No one wants to dig through logs to find a verdict. Put the table in the summary.</div></div></div>
+      <div class="take-row"><div class="take-n">6</div><div><div class="take-title">paths filter keeps CI costs predictable</div><div class="take-sub">Only run the suite when code in the module directories actually changes.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 EVAL CHECKPOINT -->
+<section class="slide">
+  <div class="si">
+    <div style="font-family:var(--font-m);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);margin-bottom:20px">eval checkpoint</div>
+    <h2 style="font-family:var(--font-d);font-size:clamp(28px,3vw,44px);margin-bottom:24px">Evals in <em>CI/CD</em></h2>
+    <p style="color:var(--fg-2);margin-bottom:24px">CI makes evals automatic — run them on every PR, fail the build on regression.</p>
+    <div class="code-card" style="font-size:13px;margin-bottom:20px"><span class="cm"># eval.yml — add as a job alongside agents.yml</span>
+<span class="kw">jobs</span>:
+  <span class="fn">evaluate</span>:
+    <span class="kw">runs-on</span>: ubuntu-latest
+    <span class="kw">steps</span>:
+      - <span class="kw">uses</span>: actions/checkout@v4
+      - <span class="kw">run</span>: <span class="st">pip install anthropic && python eval_runner.py</span>
+        <span class="kw">env</span>: { <span class="fn">ANTHROPIC_API_KEY</span>: <span class="st">${{ secrets.ANTHROPIC_API_KEY }}</span> }
+      - <span class="kw">run</span>: <span class="st">python regression.py</span>  <span class="cm"># exits 1 if below threshold</span>
+        <span class="kw">if</span>: always()</div>
+    <div class="pts">
+      <div class="pt"><span class="pt-n">1</span><div>Commit <code style="font-family:var(--font-m);background:rgba(255,255,255,0.08);padding:2px 5px;border-radius:4px">baseline.json</code> to the repo — it becomes your quality floor.</div></div>
+      <div class="pt"><span class="pt-n">2</span><div>Gate merges: <code style="font-family:var(--font-m);background:rgba(255,255,255,0.08);padding:2px 5px;border-radius:4px">regression.py</code> exits 1 on threshold breach, blocking the PR.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 COURSE COMPLETE -->
+<section class="slide s-complete">
+  <div class="si">
+    <div class="complete-ring">✓</div>
+    <h2 class="complete-h">Course <em>Complete.</em></h2>
+    <p class="complete-sub">Eight modules. One production-grade AI test infrastructure. You built agents with three browser drivers, forced structured output, parallel execution, automatic failure triage, CI/CD, and a full eval harness to measure it all.</p>
+    <div class="mod-row">
+      <span class="mod-badge">Module 01 · Foundations</span>
+      <span class="mod-badge">Module 02 · Playwright</span>
+      <span class="mod-badge">Module 03 · Vibium</span>
+      <span class="mod-badge">Module 04 · Selenium BiDi</span>
+      <span class="mod-badge">Module 05 · Multi-Agent</span>
+      <span class="mod-badge">Module 06 · Full Framework</span>
+      <span class="mod-badge">Module 07 · CI/CD</span>
+      <span class="mod-badge">Module 08 · Evaluations</span>
+    </div>
+  </div>
+</section>
+
+</div>
+<button class="nav-btn prev dim" id="prevBtn">←</button>
+<button class="nav-btn next" id="nextBtn">→</button>
+<script>
+const slides=document.querySelectorAll('.slide'),total=slides.length;let cur=0;
+function show(n){slides[cur].classList.remove('active');cur=Math.max(0,Math.min(n,total-1));slides[cur].classList.add('active');document.getElementById('sn').textContent=`${cur+1} / ${total}`;document.getElementById('pf').style.width=`${((cur+1)/total)*100}%`;document.getElementById('prevBtn').classList.toggle('dim',cur===0);document.getElementById('nextBtn').classList.toggle('dim',cur===total-1);}
+function next(){show(cur+1);}function prev(){show(cur-1);}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' '){e.preventDefault();next();}if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();prev();}if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}});
+document.getElementById('deck').addEventListener('click',e=>{if(!e.target.closest('.nav-btn'))next();});
+document.getElementById('prevBtn').addEventListener('click',e=>{e.stopPropagation();prev();});
+document.getElementById('nextBtn').addEventListener('click',e=>{e.stopPropagation();next();});
+</script>
+</body>
+</html>

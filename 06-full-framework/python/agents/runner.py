@@ -1,7 +1,18 @@
+import time
 import anthropic
 from playwright.sync_api import sync_playwright
 from models import TestScenario, RunnerResult
 from tools import TOOL_DEFINITIONS, dispatch
+
+
+def _api_call_with_retry(client: anthropic.Anthropic, **kwargs) -> anthropic.types.Message:
+    for attempt in range(4):
+        try:
+            return client.messages.create(**kwargs)
+        except anthropic.RateLimitError:
+            if attempt == 3:
+                raise
+            time.sleep(60)  # wait 1 minute for token window to reset
 
 _SYSTEM = """You are a senior test automation engineer executing browser-based tests.
 
@@ -35,7 +46,8 @@ def run(scenario: TestScenario, headless: bool = True) -> RunnerResult:
 
         try:
             while True:
-                response = client.messages.create(
+                response = _api_call_with_retry(
+                    client,
                     model="claude-sonnet-4-6",
                     max_tokens=4096,
                     system=_SYSTEM,

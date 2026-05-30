@@ -54,8 +54,13 @@ def fill(
     return f"Filled with: {value}"
 
 
+def press(page: Page, key: str) -> str:
+    page.keyboard.press(key)
+    return f"Pressed: {key}"
+
+
 def get_text(page: Page, selector: str) -> str:
-    return page.find(selector).inner_text()
+    return page.find(selector).info.text
 
 
 def assert_visible(
@@ -99,13 +104,14 @@ def get_page_title(page: Page) -> str:
 
 
 def get_current_url(page: Page) -> str:
-    return page.url
+    return page.url()
 
 
 def screenshot(page: Page, filename: str) -> str:
     os.makedirs("screenshots", exist_ok=True)
     path = f"screenshots/{filename}"
-    page.capture.screenshot(path=path)
+    with open(path, "wb") as f:
+        f.write(page.screenshot())
     return f"Screenshot saved: {path}"
 
 
@@ -158,6 +164,17 @@ TOOL_DEFINITIONS = [
                 "selector": {"type": "string"},
             },
             "required": ["value"],
+        },
+    },
+    {
+        "name": "press",
+        "description": "Press a keyboard key (e.g. Enter, Tab, Escape) on the currently focused element.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "key": {"type": "string", "description": "Key name, e.g. 'Enter', 'Tab', 'Escape'"},
+            },
+            "required": ["key"],
         },
     },
     {
@@ -224,6 +241,7 @@ def dispatch(name: str, inputs: dict, page: Page) -> str:
         "find_element":      lambda: find_element(page, **inputs),
         "click":             lambda: click(page, **inputs),
         "fill":              lambda: fill(page, **inputs),
+        "press":             lambda: press(page, **inputs),
         "get_text":          lambda: get_text(page, **inputs),
         "assert_visible":    lambda: assert_visible(page, **inputs),
         "assert_not_visible": lambda: assert_not_visible(page, **inputs),

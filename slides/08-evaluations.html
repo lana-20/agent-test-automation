@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Module 08 — Evaluations · Agent-Driven Test Automation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1a2a;--bg-dark:#0a1220;--card:#13243a;--card-dark:#0d1e30;
+  --off-white:#f5f0eb;--coral:#d4552a;--coral-light:#e8785a;
+  --mint:#4aa8a5;--mint-light:#9dbfb8;--gold:#b8862a;--gold-light:#d4a85a;
+  --violet:#7455bf;--violet-light:#9e85d4;--steel:#3d6abf;--steel-light:#7298d4;
+  --border:rgba(255,255,255,0.08);--border-mid:rgba(255,255,255,0.14);
+  --fg-2:rgba(245,240,235,0.65);--fg-3:rgba(245,240,235,0.38);
+  --accent:var(--gold-light);
+  --font-d:'Playfair Display',Georgia,serif;
+  --font-b:'Inter',-apple-system,sans-serif;
+  --font-m:'JetBrains Mono',monospace;
+}
+html,body{height:100%;overflow:hidden;background:var(--bg-dark);color:var(--off-white)}
+body{font-family:var(--font-b)}
+.progress{position:fixed;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.07);z-index:200}
+.progress-fill{height:100%;background:var(--accent);transition:width .35s ease}
+.deck-hdr{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:16px 48px 0;z-index:199;pointer-events:none}
+.module-tag{font-family:var(--font-m);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-3)}
+.slide-num{font-family:var(--font-m);font-size:11px;color:var(--fg-3)}
+.deck{width:100vw;height:100vh;position:relative}
+.slide{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .28s;overflow:hidden}
+.slide.active{opacity:1;pointer-events:all}
+.si{height:100%;display:flex;flex-direction:column;padding:72px 100px 76px;max-width:1480px;margin:0 auto}
+.nav-btn{position:fixed;bottom:28px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--fg-2);border-radius:50%;width:42px;height:42px;font-size:17px;cursor:pointer;transition:all .2s;z-index:200;display:flex;align-items:center;justify-content:center;user-select:none}
+.nav-btn:hover{background:rgba(255,255,255,0.11);color:var(--off-white);border-color:var(--border-mid)}
+.nav-btn.prev{left:36px}.nav-btn.next{right:36px}.nav-btn.dim{opacity:.28;pointer-events:none}
+.eyebrow{font-family:var(--font-m);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:14px;opacity:.9}
+h2.st{font-family:var(--font-d);font-size:clamp(30px,3.2vw,48px);line-height:1.1;letter-spacing:-.02em;margin-bottom:32px}
+h2.st em{font-style:italic;color:var(--accent)}
+h3.sst{font-family:var(--font-d);font-size:clamp(18px,1.8vw,24px);line-height:1.2;margin-bottom:10px}
+h3.sst em{font-style:italic;color:var(--accent)}
+.sbody{font-size:17px;line-height:1.65;color:var(--fg-2);max-width:780px}
+.sbody strong{color:var(--off-white)}
+.pts{list-style:none;margin-top:4px}
+.pts li{display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;font-size:17px;line-height:1.5;color:var(--fg-2)}
+.pts li::before{content:'—';color:var(--accent);font-weight:600;flex-shrink:0;margin-top:1px}
+.pts li strong{color:var(--off-white)}
+.code-card{background:var(--card-dark);border:1px solid var(--border);border-radius:10px;overflow:hidden;flex-shrink:0}
+.code-top{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px}
+.dot{width:11px;height:11px;border-radius:50%}
+.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+.code-lbl{margin-left:auto;font-family:var(--font-m);font-size:10.5px;color:var(--fg-3);letter-spacing:.1em}
+pre{padding:22px 26px;font-family:var(--font-m);font-size:13.5px;line-height:1.75;overflow-x:auto;white-space:pre}
+.kw{color:#e8785a}.fn{color:#7298d4}.st{color:#9dbfb8}.cm{color:rgba(245,240,235,.32);font-style:italic}
+.tp{color:#9e85d4}.nu{color:#d4a85a}.op{color:var(--fg-2)}
+.tbl-wrap{overflow:auto;flex:1}
+.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th{font-family:var(--font-m);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-3);padding:11px 16px;border-bottom:1px solid var(--border-mid);text-align:left;white-space:nowrap}
+.tbl td{padding:12px 16px;border-bottom:1px solid var(--border);color:var(--fg-2);vertical-align:top;line-height:1.4}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:nth-child(even) td{background:rgba(255,255,255,0.02)}
+.yes{color:#4aa8a5;font-weight:600}.no{color:var(--fg-3)}.hi{color:var(--off-white);font-weight:600}
+.cols-2{display:grid;grid-template-columns:1fr 1fr;gap:36px;flex:1}
+.col-5050{display:grid;grid-template-columns:1fr 1fr;gap:40px;flex:1}
+.col-4060{display:grid;grid-template-columns:40fr 60fr;gap:40px;flex:1}
+.col-6040{display:grid;grid-template-columns:60fr 40fr;gap:40px;flex:1}
+.tip{background:rgba(212,170,42,.07);border:1px solid rgba(212,170,42,.28);border-radius:8px;padding:16px 20px;margin-top:auto}
+.tip-lbl{font-family:var(--font-m);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--accent);margin-bottom:7px}
+.tip p{font-size:15px;color:var(--fg-2);line-height:1.5}
+.tip p strong{color:var(--off-white)}
+.take-row{display:flex;gap:18px;align-items:flex-start;margin-bottom:18px}
+.take-n{font-family:var(--font-d);font-size:44px;font-weight:400;color:var(--accent);opacity:.22;line-height:.9;flex-shrink:0;width:48px}
+.take-body{padding-top:2px}
+.take-title{font-size:16px;font-weight:600;color:var(--off-white);margin-bottom:3px}
+.take-sub{font-size:14px;color:var(--fg-2);line-height:1.5}
+.s-title .si{align-items:center;justify-content:center;text-align:center}
+.title-bg-num{font-family:var(--font-d);font-size:240px;font-weight:400;color:var(--accent);opacity:.045;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;line-height:1;user-select:none}
+.course-label{font-family:var(--font-m);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--fg-3);margin-bottom:28px}
+.title-module{font-family:var(--font-m);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;opacity:.9}
+.title-h1{font-family:var(--font-d);font-size:clamp(40px,5vw,68px);line-height:1.05;letter-spacing:-.03em;margin-bottom:20px}
+.title-h1 em{font-style:italic;color:var(--accent)}
+.title-sub{font-size:17px;color:var(--fg-2);margin-bottom:40px}
+.title-pills{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.pill{font-family:var(--font-m);font-size:11px;letter-spacing:.14em;padding:6px 14px;border:1px solid var(--border-mid);border-radius:999px;color:var(--fg-2)}
+.judge-card{background:var(--card);border:1px solid var(--border-mid);border-radius:12px;padding:28px 24px;display:flex;flex-direction:column;gap:10px}
+.judge-icon{font-family:var(--font-m);font-size:11px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:4px}
+.judge-title{font-family:var(--font-d);font-size:20px;line-height:1.2}
+.judge-title em{font-style:italic;color:var(--accent)}
+.judge-desc{font-size:13.5px;color:var(--fg-2);line-height:1.5}
+.judge-threshold{font-family:var(--font-m);font-size:11px;padding:4px 10px;border-radius:999px;background:rgba(212,170,42,.12);color:var(--gold-light);border:1px solid rgba(212,170,42,.22);display:inline-block;margin-top:4px}
+.metric-row{display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.metric-row:last-child{border-bottom:none}
+.metric-name{font-family:var(--font-m);font-size:12px;color:var(--off-white);width:200px;flex-shrink:0}
+.metric-bar-wrap{flex:1;height:8px;background:rgba(255,255,255,0.07);border-radius:4px;overflow:hidden}
+.metric-bar{height:100%;border-radius:4px;background:var(--accent)}
+.metric-val{font-family:var(--font-m);font-size:12px;color:var(--fg-2);width:60px;text-align:right;flex-shrink:0}
+.s-complete .si{align-items:center;justify-content:center;text-align:center;gap:24px}
+.complete-ring{width:100px;height:100px;border-radius:50%;border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:40px;color:var(--accent);animation:ring-pulse 2.4s ease-in-out infinite}
+@keyframes ring-pulse{0%,100%{box-shadow:0 0 0 0 rgba(212,170,42,.4)}50%{box-shadow:0 0 0 16px rgba(212,170,42,0)}}
+.complete-h{font-family:var(--font-d);font-size:clamp(36px,4.5vw,60px);letter-spacing:-.02em;line-height:1.05}
+.complete-h em{font-style:italic;color:var(--accent)}
+.complete-sub{font-size:16px;color:var(--fg-2);max-width:640px;line-height:1.65}
+.mod-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.mod-badge{font-family:var(--font-m);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:6px 14px;border:1px solid var(--border-mid);border-radius:999px;color:var(--fg-2)}
+.mod-badge.done{border-color:rgba(212,170,42,.4);color:var(--gold-light)}
+code{font-family:var(--font-m);background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;font-size:0.9em}
+.score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.score-card{background:var(--card);border:1px solid var(--border-mid);border-radius:12px;padding:24px;text-align:center}
+.score-num{font-family:var(--font-d);font-size:48px;color:var(--accent);line-height:1;margin-bottom:8px}
+.score-label{font-family:var(--font-m);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--fg-3);margin-bottom:8px}
+.score-desc{font-size:13px;color:var(--fg-2);line-height:1.5}
+</style>
+</head>
+<body>
+<div class="progress"><div class="progress-fill" id="pf"></div></div>
+<div class="deck-hdr">
+  <span class="module-tag">Module 08 · Evaluating Your Agent</span>
+  <span class="slide-num" id="sn">1 / 14</span>
+</div>
+<div class="deck" id="deck">
+
+<!-- 01 TITLE -->
+<section class="slide s-title active">
+  <div class="title-bg-num">08</div>
+  <div class="si">
+    <div class="course-label">Agent-Driven Test Automation</div>
+    <div class="title-module">Module 08</div>
+    <h1 class="title-h1">Evaluating<br><em>Your Agent</em></h1>
+    <p class="title-sub">How do you know it's any good? Golden datasets, three judges, regression gates.</p>
+    <div class="title-pills">
+      <span class="pill">golden.json</span>
+      <span class="pill">deterministic judge</span>
+      <span class="pill">LLM judge</span>
+      <span class="pill">trajectory eval</span>
+      <span class="pill">regression harness</span>
+      <span class="pill">~35 min</span>
+    </div>
+  </div>
+</section>
+
+<!-- 02 THE GAP -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Motivation</div>
+    <h2 class="st">There Is a Gap Between<br><em>"It Runs" and "It's Good."</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div>
+        <p class="sbody" style="margin-bottom:24px">Your agent runs without errors. It produces findings. But:</p>
+        <ul class="pts">
+          <li>Did it find the <strong>right bugs</strong>?</li>
+          <li>Are the findings <strong>specific enough</strong> to act on?</li>
+          <li>Did it take <strong>sensible steps</strong> — or hallucinate selectors?</li>
+          <li>Will it <strong>still work</strong> after you change the model or prompt?</li>
+        </ul>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="judge-card" style="border-color:rgba(212,85,42,.3)">
+          <div class="judge-icon" style="color:var(--coral-light)">without evals</div>
+          <p style="font-size:14px;color:var(--fg-2);line-height:1.6">You discover failures in production. A model upgrade silently breaks finding quality. A prompt change halves keyword coverage. You have no baseline.</p>
+        </div>
+        <div class="judge-card" style="border-color:rgba(212,170,42,.3)">
+          <div class="judge-icon" style="color:var(--gold-light)">with evals</div>
+          <p style="font-size:14px;color:var(--fg-2);line-height:1.6">Every change is measured against a baseline. Regressions fail the CI build before they reach production. Quality improves systematically.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 EVAL TAXONOMY -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Architecture</div>
+    <h2 class="st">Three Judges.<br><em>One Regression Harness.</em></h2>
+    <div class="score-grid" style="margin-bottom:28px">
+      <div class="score-card">
+        <div class="score-num">1</div>
+        <div class="score-label">Deterministic</div>
+        <div class="score-desc">Keyword matching against known expected findings. Fast, cheap, binary pass/fail. Measures <strong>correctness</strong>.</div>
+      </div>
+      <div class="score-card">
+        <div class="score-num">2</div>
+        <div class="score-label">LLM Judge</div>
+        <div class="score-desc">Claude Haiku scores the finding on accuracy, specificity, and actionability. Measures <strong>quality</strong>.</div>
+      </div>
+      <div class="score-card">
+        <div class="score-num">3</div>
+        <div class="score-label">Trajectory</div>
+        <div class="score-desc">Validates tool call sequence. Catches hallucinated tools and redundant loops. Measures <strong>behavior</strong>.</div>
+      </div>
+    </div>
+    <div class="tip">
+      <div class="tip-lbl">Regression Harness</div>
+      <p>Runs all three judges, compares aggregate scores against a committed <code>baseline.json</code>, exits 1 if any metric drops below threshold. Blocks the PR before it merges.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 04 GOLDEN DATASET -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Data</div>
+    <h2 class="st">The Golden Dataset:<br><em>golden.json</em></h2>
+    <div class="col-4060" style="align-items:start">
+      <div>
+        <p class="sbody" style="margin-bottom:20px">Each scenario defines:</p>
+        <ul class="pts" style="margin-bottom:0">
+          <li><code>id</code> — unique scenario key</li>
+          <li><code>site</code> — URL to test</li>
+          <li><code>task</code> — plain English instructions</li>
+          <li><code>expected_keywords</code> — must appear in finding</li>
+          <li><code>expected_tools</code> — must appear in tool calls</li>
+          <li><code>severity</code> — high / medium / low</li>
+        </ul>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">golden.json (one scenario)</div></div>
+        <pre>{
+  <span class="st">"id"</span>: <span class="st">"TC-001"</span>,
+  <span class="st">"site"</span>: <span class="st">"https://the-internet.herokuapp.com/login"</span>,
+  <span class="st">"task"</span>: <span class="st">"Test the login form. Try empty fields,
+    wrong credentials, and valid credentials."</span>,
+  <span class="st">"expected_keywords"</span>: [
+    <span class="st">"empty"</span>, <span class="st">"invalid"</span>, <span class="st">"username"</span>,
+    <span class="st">"password"</span>, <span class="st">"error"</span>
+  ],
+  <span class="st">"expected_tools"</span>: [
+    <span class="st">"navigate"</span>, <span class="st">"fill"</span>, <span class="st">"click"</span>, <span class="st">"find"</span>
+  ],
+  <span class="st">"severity"</span>: <span class="st">"high"</span>
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 DETERMINISTIC JUDGE -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Judge 1</div>
+    <h2 class="st">Deterministic Judge:<br><em>Keyword Coverage</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">judge_deterministic.py</div></div>
+        <pre><span class="kw">def</span> <span class="fn">judge</span>(scenario_id, finding,
+          expected_keywords, threshold=<span class="nu">0.6</span>):
+    lower = finding.lower()
+    matched = [kw <span class="kw">for</span> kw <span class="kw">in</span> expected_keywords
+               <span class="kw">if</span> kw.lower() <span class="kw">in</span> lower]
+    score = len(matched) / len(expected_keywords)
+    <span class="kw">return</span> DeterministicResult(
+        score=score,
+        matched=matched,
+        missed=[kw <span class="kw">for</span> kw <span class="kw">in</span> expected_keywords
+                <span class="kw">if</span> kw.lower() <span class="kw">not in</span> lower],
+        passed=score >= threshold
+    )</pre>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <p class="sbody" style="margin-bottom:8px">What it measures:</p>
+        <ul class="pts" style="margin-bottom:16px">
+          <li>Fraction of expected keywords present in the agent's final finding paragraph</li>
+          <li>Pass threshold: <strong>60%</strong> by default — tunable per scenario severity</li>
+          <li>The <code>missed</code> list tells you exactly which concepts the agent failed to report</li>
+        </ul>
+        <div class="judge-card">
+          <div class="judge-icon" style="color:var(--accent)">Example output</div>
+          <pre style="padding:0;font-size:12.5px;background:none">score=<span class="nu">0.8</span>
+matched=[<span class="st">'empty'</span>, <span class="st">'invalid'</span>, <span class="st">'username'</span>, <span class="st">'error'</span>]
+missed=[<span class="st">'password'</span>]
+passed=<span class="kw">True</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 LLM JUDGE -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Judge 2</div>
+    <h2 class="st">LLM Judge:<br><em>Finding Quality Rubric</em></h2>
+    <div class="col-4060" style="align-items:start">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <p class="sbody" style="font-size:15px;margin-bottom:4px">Three dimensions, 0.0–1.0 each:</p>
+        <div class="judge-card" style="gap:8px">
+          <div class="judge-icon" style="color:var(--accent)">Accuracy</div>
+          <div class="judge-desc">Is the finding factually correct? Does it describe what actually happened on the page?</div>
+        </div>
+        <div class="judge-card" style="gap:8px">
+          <div class="judge-icon" style="color:var(--accent)">Specificity</div>
+          <div class="judge-desc">Does it name the exact element, selector, or behavior — not just "there was an error"?</div>
+        </div>
+        <div class="judge-card" style="gap:8px">
+          <div class="judge-icon" style="color:var(--accent)">Actionability</div>
+          <div class="judge-desc">Would a developer know exactly what to fix from this finding alone?</div>
+        </div>
+        <div style="font-family:var(--font-m);font-size:11px;color:var(--fg-3);padding-top:4px">overall = (accuracy + specificity + actionability) / 3 &nbsp;·&nbsp; pass ≥ 0.65</div>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">judge_llm.py — rubric</div></div>
+        <pre>RUBRIC = <span class="st">"""Score this finding on three criteria.
+
+Finding: {finding}
+Task: {task}
+
+Score 0.0–1.0 each:
+- accuracy: factually correct?
+- specificity: names exact element?
+- actionability: developer knows the fix?
+
+Return JSON:
+{"accuracy": float,
+ "specificity": float,
+ "actionability": float,
+ "overall": float,
+ "reasoning": "one sentence"}
+"""</span>
+
+<span class="cm"># Uses claude-haiku — fast + cheap</span>
+response = client.messages.create(
+    model=<span class="st">"claude-haiku-4-5-20251001"</span>,
+    max_tokens=<span class="nu">256</span>,
+    messages=[{<span class="st">"role"</span>: <span class="st">"user"</span>,
+               <span class="st">"content"</span>: prompt}]
+)</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 TRAJECTORY JUDGE -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Judge 3</div>
+    <h2 class="st">Trajectory Judge:<br><em>Did It Behave?</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div>
+        <p class="sbody" style="margin-bottom:20px">Keyword coverage and quality scores can both be high — but the agent might have taken 40 steps, hallucinated three selectors, and clicked the same button eight times in a row.</p>
+        <p class="sbody" style="margin-bottom:20px">The trajectory judge catches all of that:</p>
+        <table class="tbl">
+          <thead><tr><th>Check</th><th>Fails when</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Coverage</strong></td><td>Expected tools missing from call sequence</td></tr>
+            <tr><td><strong>Hallucination</strong></td><td>Tool name not in the valid tool list</td></tr>
+            <tr><td><strong>Redundancy</strong></td><td>Same tool called 3+ times in a row</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">judge_trajectory.py</div></div>
+        <pre><span class="kw">def</span> <span class="fn">judge</span>(scenario_id, tool_calls, expected):
+    sequence = [tc[<span class="st">"name"</span>]
+                <span class="kw">for</span> tc <span class="kw">in</span> tool_calls]
+    called = <span class="fn">set</span>(sequence)
+    expected_set = <span class="fn">set</span>(expected)
+
+    coverage = (
+        len(expected_set & called)
+        / len(expected_set)
+    )
+    hallucinated = [
+        t <span class="kw">for</span> t <span class="kw">in</span> sequence
+        <span class="kw">if</span> t <span class="kw">not in</span> VALID_TOOLS
+    ]
+
+    redundant = <span class="fn">count_triple_repeats</span>(sequence)
+
+    <span class="kw">return</span> TrajectoryResult(
+        coverage=coverage,
+        hallucinated=hallucinated,
+        redundant_calls=redundant,
+        passed=(coverage >= <span class="nu">0.6</span>
+                <span class="kw">and not</span> hallucinated
+                <span class="kw">and</span> redundant == <span class="nu">0</span>)
+    )</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 08 EVAL RUNNER -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Putting It Together</div>
+    <h2 class="st">The Eval Runner:<br><em>One Script, All Three Judges</em></h2>
+    <div class="col-4060" style="align-items:start">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <p class="sbody" style="font-size:15px">eval_runner.py does three things:</p>
+        <div class="take-row">
+          <div class="take-n">1</div>
+          <div class="take-body">
+            <div class="take-title">Run the agent</div>
+            <div class="take-sub">Loads each golden scenario, runs the agent loop (MAX_TURNS = 8), captures the final finding text and every tool call made.</div>
+          </div>
+        </div>
+        <div class="take-row">
+          <div class="take-n">2</div>
+          <div class="take-body">
+            <div class="take-title">Apply all three judges</div>
+            <div class="take-sub">Deterministic + LLM + Trajectory — sequentially per scenario, results accumulated.</div>
+          </div>
+        </div>
+        <div class="take-row">
+          <div class="take-n">3</div>
+          <div class="take-body">
+            <div class="take-title">Write eval_report.md</div>
+            <div class="take-sub">Summary table + per-scenario rows + LLM judge detail. Optionally exports JSON for regression.</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">terminal</div></div>
+        <pre><span class="cm"># Run all 10 golden scenarios</span>
+python eval_runner.py
+
+<span class="cm"># Run one module only</span>
+python eval_runner.py <span class="st">02-playwright</span>
+
+<span class="cm"># Output</span>
+Running <span class="nu">10</span> scenarios
+
+[TC-001] the-internet.herokuapp.com/login
+  PASS | det=<span class="nu">80%</span> llm=<span class="nu">0.82</span> traj=<span class="nu">100%</span>
+
+[TC-002] the-internet.herokuapp.com/checkboxes
+  PASS | det=<span class="nu">75%</span> llm=<span class="nu">0.71</span> traj=<span class="nu">100%</span>
+
+[TC-005] saucedemo.com
+  FAIL | det=<span class="nu">40%</span> llm=<span class="nu">0.58</span> traj=<span class="nu">75%</span>
+
+Report written to eval_report.md</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 09 METRICS -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Measurement</div>
+    <h2 class="st">Four Metrics<br><em>Worth Tracking</em></h2>
+    <p class="sbody" style="margin-bottom:28px;max-width:680px">These four numbers give you a complete picture of agent health. Track them over time as you change models, prompts, or tools.</p>
+    <div style="flex:1">
+      <div class="metric-row">
+        <div class="metric-name">det pass rate</div>
+        <div class="metric-bar-wrap"><div class="metric-bar" style="width:80%"></div></div>
+        <div class="metric-val">80%</div>
+        <div style="font-size:13px;color:var(--fg-2);width:360px;padding-left:16px">Fraction of scenarios where keyword coverage ≥ threshold. Your primary correctness signal.</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">llm avg overall</div>
+        <div class="metric-bar-wrap"><div class="metric-bar" style="width:74%"></div></div>
+        <div class="metric-val">0.74</div>
+        <div style="font-size:13px;color:var(--fg-2);width:360px;padding-left:16px">Mean quality score across all scenarios. Drops when findings become vague or inaccurate.</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">traj pass rate</div>
+        <div class="metric-bar-wrap"><div class="metric-bar" style="width:90%"></div></div>
+        <div class="metric-val">90%</div>
+        <div style="font-size:13px;color:var(--fg-2);width:360px;padding-left:16px">Fraction of scenarios with valid tool sequences. A sudden drop = the model is hallucinating tool names.</div>
+      </div>
+      <div class="metric-row">
+        <div class="metric-name">hallucination rate</div>
+        <div class="metric-bar-wrap"><div class="metric-bar" style="width:5%;background:var(--coral)"></div></div>
+        <div class="metric-val" style="color:var(--coral-light)">5%</div>
+        <div style="font-size:13px;color:var(--fg-2);width:360px;padding-left:16px">Fraction of runs with at least one hallucinated tool call. Should stay close to zero.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 REGRESSION HARNESS -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Regression</div>
+    <h2 class="st">Regression Harness:<br><em>Protect Your Baseline</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <p class="sbody" style="font-size:15px">The workflow:</p>
+        <div class="take-row">
+          <div class="take-n">1</div>
+          <div class="take-body">
+            <div class="take-title">Run evals → export metrics</div>
+            <div class="take-sub">After <code>eval_runner.py</code>, aggregate 4 key metrics into <code>current.json</code>.</div>
+          </div>
+        </div>
+        <div class="take-row">
+          <div class="take-n">2</div>
+          <div class="take-body">
+            <div class="take-title">Compare against baseline</div>
+            <div class="take-sub"><code>regression.py</code> loads <code>baseline.json</code>, checks each metric against its threshold, exits 1 on breach.</div>
+          </div>
+        </div>
+        <div class="take-row">
+          <div class="take-n">3</div>
+          <div class="take-body">
+            <div class="take-title">Promote when ready</div>
+            <div class="take-sub"><code>python regression.py --save-baseline</code> promotes current to the new floor. Commit it to the repo.</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">regression.py — output</div></div>
+        <pre><span class="cm"># On pass:</span>
+No regressions detected.
+  det_pass_rate:    <span class="nu">0.700</span> → <span class="nu">0.800</span>  +0.100
+  llm_avg_overall:  <span class="nu">0.680</span> → <span class="nu">0.740</span>  +0.060
+  traj_pass_rate:   <span class="nu">0.800</span> → <span class="nu">0.900</span>  +0.100
+  hallucination_rate: <span class="nu">0.100</span> → <span class="nu">0.050</span>  -0.050
+
+<span class="cm"># On regression (exits 1):</span>
+REGRESSION DETECTED — 1 metric below threshold:
+  llm_avg_overall:
+    baseline=<span class="nu">0.680</span>
+    current=<span class="nu">0.590</span>
+    threshold=<span class="nu">0.650</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 CI INTEGRATION -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">CI/CD</div>
+    <h2 class="st">Evals in GitHub Actions:<br><em>eval.yml</em></h2>
+    <div class="col-4060" style="align-items:start">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <p class="sbody" style="font-size:15px">Add a separate eval job that runs alongside your test agent:</p>
+        <ul class="pts" style="margin-bottom:0">
+          <li>Runs on every PR that touches <code>08-evaluations/</code> or agent code</li>
+          <li>Fails the build if <code>regression.py</code> exits 1</li>
+          <li><code>baseline.json</code> is committed to the repo — it is your quality contract</li>
+          <li>Promoted only when the team deliberately decides to raise the bar</li>
+        </ul>
+        <div class="tip" style="margin-top:0">
+          <div class="tip-lbl">Cost note</div>
+          <p>10 scenarios × Haiku = ~$0.002 per eval run. Run the full suite on PRs, a subset (high severity only) on every push.</p>
+        </div>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">.github/workflows/eval.yml</div></div>
+        <pre><span class="kw">name</span>: Agent Evals
+<span class="kw">on</span>:
+  pull_request:
+    paths:
+      - <span class="st">'08-evaluations/**'</span>
+      - <span class="st">'**/agent.py'</span>
+      - <span class="st">'**/tools.py'</span>
+
+<span class="kw">jobs</span>:
+  <span class="fn">evaluate</span>:
+    <span class="kw">runs-on</span>: ubuntu-latest
+    <span class="kw">steps</span>:
+      - <span class="kw">uses</span>: actions/checkout@v4
+      - <span class="kw">run</span>: |
+          <span class="fn">pip</span> install anthropic
+          <span class="fn">python</span> eval_runner.py
+          <span class="fn">python</span> regression.py
+        <span class="kw">working-directory</span>: <span class="st">08-evaluations/python</span>
+        <span class="kw">env</span>:
+          ANTHROPIC_API_KEY: <span class="st">${{ secrets.ANTHROPIC_API_KEY }}</span>
+        <span class="kw">if</span>: always()
+      - <span class="kw">uses</span>: actions/upload-artifact@v4
+        <span class="kw">with</span>:
+          <span class="kw">name</span>: eval-report
+          <span class="kw">path</span>: <span class="st">08-evaluations/python/eval_report.md</span>
+        <span class="kw">if</span>: always()</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 READING THE REPORT -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Output</div>
+    <h2 class="st">Reading<br><em>eval_report.md</em></h2>
+    <div class="col-5050" style="align-items:start">
+      <div>
+        <p class="sbody" style="font-size:15px;margin-bottom:20px">The report has three sections:</p>
+        <div class="take-row">
+          <div class="take-n" style="font-size:32px">S</div>
+          <div class="take-body">
+            <div class="take-title">Summary table</div>
+            <div class="take-sub">Overall pass rates for all three judges plus runtime. Your first-glance health check.</div>
+          </div>
+        </div>
+        <div class="take-row">
+          <div class="take-n" style="font-size:32px">P</div>
+          <div class="take-body">
+            <div class="take-title">Per-scenario results</div>
+            <div class="take-sub">One row per golden scenario. ✓/✗ plus score for each judge. Find outliers quickly.</div>
+          </div>
+        </div>
+        <div class="take-row">
+          <div class="take-n" style="font-size:32px">D</div>
+          <div class="take-body">
+            <div class="take-title">LLM judge detail</div>
+            <div class="take-sub">Accuracy / specificity / actionability scores with one-sentence reasoning per scenario. Diagnose quality failures.</div>
+          </div>
+        </div>
+      </div>
+      <div class="code-card">
+        <div class="code-top"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div><div class="code-lbl">eval_report.md — rendered</div></div>
+        <pre style="font-size:12px">## Summary
+
+| Judge        | Pass Rate | Key Metric             |
+|---|---|---|
+| Deterministic| <span class="nu">80%</span>       | avg coverage: <span class="nu">82%</span>      |
+| LLM Judge    | <span class="nu">8/10</span> passed | avg overall: <span class="nu">0.74</span>    |
+| Trajectory   | <span class="nu">9/10</span> passed | hallucination: <span class="nu">0%</span>   |
+
+## Per-Scenario Results
+
+| ID     | Site              | Det   | LLM  | Traj  |
+|---|---|---|---|---|
+| TC-001 | the-internet…/login | <span class="st">✓ 80%</span> | <span class="st">✓ 0.82</span> | <span class="st">✓ 100%</span> |
+| TC-005 | saucedemo.com     | <span class="tp">✗ 40%</span> | <span class="tp">✗ 0.58</span> | <span class="tp">✗ 75%</span>  |</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 KEY TAKEAWAYS -->
+<section class="slide">
+  <div class="si">
+    <div class="eyebrow">Key Takeaways</div>
+    <h2 class="st">What You Learned<br><em>in Module 08</em></h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;flex:1;align-content:start">
+      <div class="take-row">
+        <div class="take-n">1</div>
+        <div class="take-body">
+          <div class="take-title">Three judges, three angles</div>
+          <div class="take-sub">Deterministic catches missing facts. LLM judge catches vague reasoning. Trajectory catches bad behavior. All three together give you confidence.</div>
+        </div>
+      </div>
+      <div class="take-row">
+        <div class="take-n">2</div>
+        <div class="take-body">
+          <div class="take-title">Golden dataset = your spec</div>
+          <div class="take-sub">expected_keywords and expected_tools are a machine-readable specification of what your agent must do. Treat them like unit tests — add to them when you find new failure modes.</div>
+        </div>
+      </div>
+      <div class="take-row">
+        <div class="take-n">3</div>
+        <div class="take-body">
+          <div class="take-title">baseline.json is a contract</div>
+          <div class="take-sub">Committing the baseline to the repo means every PR must maintain quality. Regressions fail the build before they reach production.</div>
+        </div>
+      </div>
+      <div class="take-row">
+        <div class="take-n">4</div>
+        <div class="take-body">
+          <div class="take-title">Evals cost almost nothing</div>
+          <div class="take-sub">10 scenarios with Haiku as judge = ~$0.002. There is no reason not to run evals on every PR. The cost of a production failure is not $0.002.</div>
+        </div>
+      </div>
+      <div class="take-row">
+        <div class="take-n">5</div>
+        <div class="take-body">
+          <div class="take-title">Each module has a checkpoint</div>
+          <div class="take-sub">Modules 01–07 each include a targeted eval checkpoint. Apply the right judge to the right module: trajectory for driver modules, LLM judge for the full framework.</div>
+        </div>
+      </div>
+      <div class="take-row">
+        <div class="take-n">6</div>
+        <div class="take-body">
+          <div class="take-title">Improve systematically</div>
+          <div class="take-sub">Evals turn gut-feel improvements into measured progress. Change a prompt, run evals, compare against baseline. Ship only if it's better.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 14 COURSE COMPLETE -->
+<section class="slide s-complete">
+  <div class="si">
+    <div class="complete-ring">✓</div>
+    <h2 class="complete-h">Course <em>Complete.</em></h2>
+    <p class="complete-sub">Eight modules. One production-grade AI test infrastructure. You built agents with three browser drivers, forced structured output, parallel execution, automatic failure triage, CI/CD, and a full eval harness to measure quality over time.</p>
+    <div class="mod-row">
+      <span class="mod-badge done">Module 01 · Foundations</span>
+      <span class="mod-badge done">Module 02 · Playwright</span>
+      <span class="mod-badge done">Module 03 · Vibium</span>
+      <span class="mod-badge done">Module 04 · Selenium BiDi</span>
+      <span class="mod-badge done">Module 05 · Multi-Agent</span>
+      <span class="mod-badge done">Module 06 · Full Framework</span>
+      <span class="mod-badge done">Module 07 · CI/CD</span>
+      <span class="mod-badge done">Module 08 · Evaluations</span>
+    </div>
+  </div>
+</section>
+
+</div>
+<button class="nav-btn prev dim" id="prevBtn">←</button>
+<button class="nav-btn next" id="nextBtn">→</button>
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let cur = 0;
+function show(n) {
+  slides[cur].classList.remove('active');
+  cur = Math.max(0, Math.min(n, total - 1));
+  slides[cur].classList.add('active');
+  document.getElementById('sn').textContent = `${cur + 1} / ${total}`;
+  document.getElementById('pf').style.width = `${((cur + 1) / total) * 100}%`;
+  document.getElementById('prevBtn').classList.toggle('dim', cur === 0);
+  document.getElementById('nextBtn').classList.toggle('dim', cur === total - 1);
+}
+function next() { show(cur + 1); }
+function prev() { show(cur - 1); }
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); next(); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                    { e.preventDefault(); prev(); }
+  if (e.key === 'f' || e.key === 'F') { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+});
+document.getElementById('deck').addEventListener('click', e => {
+  if (!e.target.closest('.nav-btn')) next();
+});
+document.getElementById('prevBtn').addEventListener('click', e => { e.stopPropagation(); prev(); });
+document.getElementById('nextBtn').addEventListener('click', e => { e.stopPropagation(); next(); });
+show(0);
+</script>
+</body>
+</html>

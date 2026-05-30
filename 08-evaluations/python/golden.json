@@ -1,0 +1,92 @@
+[
+  {
+    "id": "TC-001",
+    "site": "https://the-internet.herokuapp.com/login",
+    "task": "Test the login form. Try submitting with empty fields, wrong credentials, and valid credentials (username: tomsmith, password: SuperSecretPassword!).",
+    "expected_keywords": ["empty", "invalid", "username", "password", "error"],
+    "expected_tools": ["navigate", "fill", "click", "find"],
+    "module": "02-playwright",
+    "severity": "high"
+  },
+  {
+    "id": "TC-002",
+    "site": "https://the-internet.herokuapp.com/checkboxes",
+    "task": "Verify the checkboxes on this page work correctly. Check state changes and accessibility.",
+    "expected_keywords": ["checkbox", "checked", "unchecked", "state"],
+    "expected_tools": ["navigate", "find", "click", "is_checked"],
+    "module": "03-vibium",
+    "severity": "medium"
+  },
+  {
+    "id": "TC-003",
+    "site": "https://the-internet.herokuapp.com/dynamic_loading/1",
+    "task": "Test the dynamic loading element. Click Start and verify the loading indicator appears, then disappears when content loads.",
+    "expected_keywords": ["loading", "wait", "appears", "finish", "content"],
+    "expected_tools": ["navigate", "click", "wait", "find"],
+    "module": "02-playwright",
+    "severity": "medium"
+  },
+  {
+    "id": "TC-004",
+    "site": "https://the-internet.herokuapp.com/javascript_alerts",
+    "task": "Test all three alert types: JS Alert, JS Confirm (accept and dismiss), and JS Prompt. Verify the result messages update correctly.",
+    "expected_keywords": ["alert", "confirm", "prompt", "accepted", "dismissed", "result"],
+    "expected_tools": ["navigate", "click", "dialog_accept", "dialog_dismiss", "find"],
+    "module": "03-vibium",
+    "severity": "high"
+  },
+  {
+    "id": "TC-005",
+    "site": "https://www.saucedemo.com/",
+    "task": "Test the login page. Try locked_out_user credentials and verify the error message. Then login with standard_user / secret_sauce.",
+    "expected_keywords": ["locked", "error", "login", "credentials", "epic sadface"],
+    "expected_tools": ["navigate", "fill", "click", "find"],
+    "module": "02-playwright",
+    "severity": "high"
+  },
+  {
+    "id": "TC-006",
+    "site": "https://demoqa.com/text-box",
+    "task": "Fill out the text box form with valid data (name, email, current address, permanent address) and submit. Verify the output section shows all submitted values.",
+    "expected_keywords": ["name", "email", "address", "output", "submitted"],
+    "expected_tools": ["navigate", "fill", "click", "find", "get_text"],
+    "module": "02-playwright",
+    "severity": "low"
+  },
+  {
+    "id": "TC-007",
+    "site": "https://the-internet.herokuapp.com/add_remove_elements/",
+    "task": "Click Add Element multiple times and verify Delete buttons appear. Then click a Delete button and verify it removes correctly.",
+    "expected_keywords": ["add", "delete", "appears", "removes", "count"],
+    "expected_tools": ["navigate", "click", "find", "count"],
+    "module": "03-vibium",
+    "severity": "low"
+  },
+  {
+    "id": "TC-008",
+    "site": "https://the-internet.herokuapp.com/dropdown",
+    "task": "Test the dropdown. Verify the default state, then select Option 1 and Option 2, confirming the selected value updates correctly each time.",
+    "expected_keywords": ["dropdown", "select", "option 1", "option 2", "selected"],
+    "expected_tools": ["navigate", "select", "get_value", "find"],
+    "module": "04-selenium-bidi",
+    "severity": "medium"
+  },
+  {
+    "id": "TC-009",
+    "site": "https://the-internet.herokuapp.com/broken_images",
+    "task": "Check all images on this page. Identify which images are broken (failed to load). Report the count of broken vs working images.",
+    "expected_keywords": ["broken", "image", "failed", "src", "count"],
+    "expected_tools": ["navigate", "find_all", "get_attribute", "evaluate"],
+    "module": "04-selenium-bidi",
+    "severity": "medium"
+  },
+  {
+    "id": "TC-010",
+    "site": "https://the-internet.herokuapp.com/status_codes",
+    "task": "Click each status code link (200, 301, 404, 500) and verify the page correctly describes what each status code means.",
+    "expected_keywords": ["200", "301", "404", "500", "status", "redirect", "not found", "error"],
+    "expected_tools": ["navigate", "click", "find", "get_text"],
+    "module": "06-full-framework",
+    "severity": "medium"
+  }
+]

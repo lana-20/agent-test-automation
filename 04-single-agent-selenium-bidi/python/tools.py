@@ -1,6 +1,7 @@
 import json
 import os
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -117,6 +118,21 @@ def fill(
     el.clear()
     el.send_keys(value)
     return f"Filled with: {value}"
+
+
+def press(driver: WebDriver, key: str, selector: str | None = None) -> str:
+    key_map = {
+        "Enter": Keys.ENTER, "Tab": Keys.TAB, "Escape": Keys.ESCAPE,
+        "ArrowDown": Keys.ARROW_DOWN, "ArrowUp": Keys.ARROW_UP,
+        "Backspace": Keys.BACKSPACE, "Space": Keys.SPACE,
+    }
+    k = key_map.get(key, key)
+    if selector:
+        driver.find_element(By.CSS_SELECTOR, selector).send_keys(k)
+    else:
+        from selenium.webdriver.common.action_chains import ActionChains
+        ActionChains(driver).send_keys(k).perform()
+    return f"Pressed: {key}"
 
 
 def get_text(driver: WebDriver, selector: str) -> str:
@@ -270,6 +286,18 @@ TOOL_DEFINITIONS = [
         },
     },
     {
+        "name": "press",
+        "description": "Press a keyboard key. Use selector to target a specific element, or omit to send to the active element. Common keys: Enter, Tab, Escape, Backspace.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "key":      {"type": "string", "description": "Key name: Enter, Tab, Escape, ArrowDown, Backspace"},
+                "selector": {"type": "string", "description": "CSS selector (optional — focuses element first)"},
+            },
+            "required": ["key"],
+        },
+    },
+    {
         "name": "get_text",
         "description": "Get the text content of an element by CSS selector.",
         "input_schema": {
@@ -366,6 +394,7 @@ def dispatch(name: str, inputs: dict, driver: WebDriver) -> str:
         "find_element":       lambda: find_element(driver, **inputs),
         "click":              lambda: click(driver, **inputs),
         "fill":               lambda: fill(driver, **inputs),
+        "press":              lambda: press(driver, **inputs),
         "get_text":           lambda: get_text(driver, **inputs),
         "assert_visible":     lambda: assert_visible(driver, **inputs),
         "assert_not_visible": lambda: assert_not_visible(driver, **inputs),
