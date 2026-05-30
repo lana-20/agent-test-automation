@@ -135,6 +135,19 @@ typescript/
     │   └── reporter.ts
     ├── orchestrator.ts
     └── index.ts
+
+vibium/
+├── requirements.txt
+├── models.py           ← identical to python/
+├── tools.py            ← Vibium browser tools (same interface, different driver)
+├── agents/
+│   ├── __init__.py
+│   ├── architect.py    ← identical to python/ (no browser)
+│   ├── runner.py       ← Vibium runner: vibium_browser.start() instead of sync_playwright()
+│   ├── asserter.py     ← identical to python/ (no browser)
+│   └── reporter.py     ← identical to python/ (no browser)
+├── orchestrator.py     ← identical to python/
+└── run.py              ← identical to python/
 ```
 
 ## Setup — Python
@@ -157,6 +170,16 @@ npx playwright install chromium
 cp ../../.env.example .env
 npm start                  # headed
 npm run start:headless     # headless
+```
+
+## Setup — Vibium
+
+```bash
+cd 06-full-framework/vibium
+pip install -r requirements.txt
+cp ../../.env.example .env
+python run.py             # headed
+python run.py --headless  # headless
 ```
 
 ## What the output looks like
