@@ -13,6 +13,7 @@ A progressive course on building AI test agents with Playwright, Vibium, and Sel
 | [05 — Multi-agent](05-multi-agent/) | Orchestrator + parallel runners | ✅ |
 | [06 — Full framework](06-full-framework/) | Specialist agents + reporter | ✅ |
 | [07 — CI/CD](07-ci-cd/) | GitHub Actions: headless runs, artifacts, step summaries | ✅ |
+| [08 — Evaluations](08-evaluations/) | Golden dataset, 3 judges, regression harness | ✅ |
 
 ## Prerequisites
 
