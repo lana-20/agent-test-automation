@@ -48,6 +48,18 @@ TOOL_DEFINITIONS = [
         },
     },
     {
+        "name": "type",
+        "description": "Type text into an element located by CSS selector. Use this instead of fill() when the input has no <label> element (e.g. placeholder-only inputs). Follow with press(Enter) to submit.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "selector": {"type": "string", "description": "CSS selector"},
+                "text": {"type": "string", "description": "Text to type"},
+            },
+            "required": ["selector", "text"],
+        },
+    },
+    {
         "name": "press",
         "description": "Press a keyboard key on the focused element. Common keys: Enter, Tab, Escape.",
         "input_schema": {
@@ -161,6 +173,11 @@ def dispatch(name: str, inputs: dict, page: Page) -> str:
                 el = page.find({"placeholder": label})
             el.fill(value)
             return f"Filled '{label}' with '{value}'"
+
+        if name == "type":
+            el = page.find(inputs["selector"])
+            el.type(inputs["text"])
+            return f"Typed '{inputs['text']}' into {inputs['selector']}"
 
         if name == "press":
             page.keyboard.press(inputs["key"])

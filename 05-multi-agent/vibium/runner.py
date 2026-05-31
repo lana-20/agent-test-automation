@@ -20,7 +20,12 @@ Rules:
 - Work step by step. After each action, verify the result before proceeding.
 - Prefer locating elements by CSS selector. Use role+text as fallback.
 - When an assertion fails, stop and report FAIL with the exact reason.
-- At the end, output a concise report starting with PASS or FAIL, followed by one bullet per step."""
+- At the end, output a concise report starting with PASS or FAIL, followed by one bullet per step.
+
+Typing into inputs:
+- Use type(selector=<css>, text=<value>) to type into any input field, then press(Enter) to submit.
+- Do NOT use fill() — it requires a <label> element and fails on placeholder-only inputs.
+- Do NOT press keys one character at a time."""
 
 
 def run_scenario(scenario: TestScenario, page: Page) -> RunnerResult:

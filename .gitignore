@@ -20,6 +20,8 @@ screenshots/
 transcripts/
 06-full-framework/python/report.json
 06-full-framework/python/report.md
+06-full-framework/vibium/report.json
+06-full-framework/vibium/report.md
 
 # eval generated outputs
 08-evaluations/python/current.json
@@ -27,3 +29,4 @@ transcripts/
 
 # OS
 .DS_Store
+bugs/
