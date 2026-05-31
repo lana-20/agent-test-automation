@@ -27,7 +27,7 @@ def main(headless: bool = True) -> None:
         contexts = [bro.new_context() for _ in scenarios]
         pages = [ctx.new_page() for ctx in contexts]
         results = []
-        with ThreadPoolExecutor(max_workers=min(len(scenarios), 3)) as pool:
+        with ThreadPoolExecutor(max_workers=min(len(scenarios), 2)) as pool:
             futures = {pool.submit(run_scenario, s, p): s for s, p in zip(scenarios, pages)}
             for future in as_completed(futures):
                 results.append(future.result())
