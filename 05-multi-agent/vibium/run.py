@@ -1,5 +1,6 @@
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from vibium import browser as vibium_browser
 from orchestrator import plan
 from runner import run_scenario
 from models import TestReport
@@ -21,13 +22,16 @@ def main(headless: bool = True) -> None:
 
     print(f"\nRunning {len(scenarios)} scenario(s) in parallel...\n" + "=" * 60)
 
-    results = []
-    with ThreadPoolExecutor(max_workers=min(len(scenarios), 3)) as pool:
-        futures = {
-            pool.submit(run_scenario, s, headless): s for s in scenarios
-        }
-        for future in as_completed(futures):
-            results.append(future.result())
+    bro = vibium_browser.start(headless=headless)
+    try:
+        pages = [bro.new_page() for _ in scenarios]
+        results = []
+        with ThreadPoolExecutor(max_workers=min(len(scenarios), 3)) as pool:
+            futures = {pool.submit(run_scenario, s, p): s for s, p in zip(scenarios, pages)}
+            for future in as_completed(futures):
+                results.append(future.result())
+    finally:
+        bro.stop()
 
     results.sort(key=lambda r: r.scenario_id)
     report = TestReport(scenarios=results)

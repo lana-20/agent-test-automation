@@ -1,6 +1,6 @@
 import time
 import anthropic
-from vibium import browser as vibium_browser
+from vibium import Page
 from models import TestScenario, RunnerResult
 from tools import TOOL_DEFINITIONS, dispatch
 
@@ -23,7 +23,7 @@ Rules:
 - At the end, output a concise report starting with PASS or FAIL, followed by one bullet per step."""
 
 
-def run(scenario: TestScenario, headless: bool = True) -> RunnerResult:
+def run(scenario: TestScenario, page: Page) -> RunnerResult:
     client = anthropic.Anthropic()
     prefix = f"[Runner:{scenario.id}]"
 
@@ -37,42 +37,36 @@ def run(scenario: TestScenario, headless: bool = True) -> RunnerResult:
 
     messages = [{"role": "user", "content": task}]
     step_log = []
-
-    bro = vibium_browser.start(headless=headless)
-    page = bro.new_page()
     final_text = ""
 
-    try:
-        while True:
-            response = _api_call_with_retry(
-                client,
-                model="claude-sonnet-4-6",
-                max_tokens=4096,
-                system=_SYSTEM,
-                tools=TOOL_DEFINITIONS,
-                messages=messages,
-            )
-            messages.append({"role": "assistant", "content": response.content})
-            tool_results = []
+    while True:
+        response = _api_call_with_retry(
+            client,
+            model="claude-sonnet-4-6",
+            max_tokens=4096,
+            system=_SYSTEM,
+            tools=TOOL_DEFINITIONS,
+            messages=messages,
+        )
+        messages.append({"role": "assistant", "content": response.content})
+        tool_results = []
 
-            for block in response.content:
-                if block.type == "text":
-                    final_text = block.text
-                    print(f"{prefix} {block.text[:120]}")
-                elif block.type == "tool_use":
-                    result = dispatch(block.name, block.input, page)
-                    print(f"{prefix}   -> {block.name}: {result[:80]}")
-                    step_log.append({"tool": block.name, "input": block.input, "result": result})
-                    tool_results.append(
-                        {"type": "tool_result", "tool_use_id": block.id, "content": result}
-                    )
+        for block in response.content:
+            if block.type == "text":
+                final_text = block.text
+                print(f"{prefix} {block.text[:120]}")
+            elif block.type == "tool_use":
+                result = dispatch(block.name, block.input, page)
+                print(f"{prefix}   -> {block.name}: {result[:80]}")
+                step_log.append({"tool": block.name, "input": block.input, "result": result})
+                tool_results.append(
+                    {"type": "tool_result", "tool_use_id": block.id, "content": result}
+                )
 
-            if tool_results:
-                messages.append({"role": "user", "content": tool_results})
-            if response.stop_reason == "end_turn":
-                break
-    finally:
-        bro.stop()
+        if tool_results:
+            messages.append({"role": "user", "content": tool_results})
+        if response.stop_reason == "end_turn":
+            break
 
     first_word = final_text.strip().split()[0].upper() if final_text.strip() else ""
     passed = first_word != "FAIL"

@@ -1,5 +1,6 @@
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from vibium import browser as vibium_browser
 from agents.architect import plan
 from agents.runner import run
 from agents.asserter import classify
@@ -18,25 +19,30 @@ def execute(spec: str, headless: bool = True) -> TestReport:
 
     results = []
 
-    with ThreadPoolExecutor(max_workers=min(max(len(high), 1), 3)) as pool:
-        futures = {pool.submit(run, s, headless): s for s in high}
-        for future in as_completed(futures):
-            results.append(future.result())
+    bro = vibium_browser.start(headless=headless)
+    try:
+        high_pages = [bro.new_page() for _ in high]
+        with ThreadPoolExecutor(max_workers=min(max(len(high), 1), 3)) as pool:
+            futures = {pool.submit(run, s, p): s for s, p in zip(high, high_pages)}
+            for future in as_completed(futures):
+                results.append(future.result())
 
-    # Stop early if any high-priority scenario failed
-    critical_failures = [r for r in results if not r.passed]
-    if critical_failures:
-        print(
-            f"\n[Orchestrator] {len(critical_failures)} high-priority failure(s) — "
-            "skipping remaining scenarios."
-        )
-    else:
-        if rest:
-            print(f"\n[Orchestrator] Running {len(rest)} remaining scenario(s)...")
-            with ThreadPoolExecutor(max_workers=min(len(rest), 3)) as pool:
-                futures = {pool.submit(run, s, headless): s for s in rest}
-                for future in as_completed(futures):
-                    results.append(future.result())
+        critical_failures = [r for r in results if not r.passed]
+        if critical_failures:
+            print(
+                f"\n[Orchestrator] {len(critical_failures)} high-priority failure(s) — "
+                "skipping remaining scenarios."
+            )
+        else:
+            if rest:
+                print(f"\n[Orchestrator] Running {len(rest)} remaining scenario(s)...")
+                rest_pages = [bro.new_page() for _ in rest]
+                with ThreadPoolExecutor(max_workers=min(len(rest), 3)) as pool:
+                    futures = {pool.submit(run, s, p): s for s, p in zip(rest, rest_pages)}
+                    for future in as_completed(futures):
+                        results.append(future.result())
+    finally:
+        bro.stop()
 
     failed_results = [r for r in results if not r.passed]
     scenario_map = {s.id: s for s in scenarios}
