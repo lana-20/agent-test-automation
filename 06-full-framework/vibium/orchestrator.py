@@ -20,8 +20,11 @@ def execute(spec: str, headless: bool = True) -> TestReport:
     results = []
 
     bro = vibium_browser.start(headless=headless)
+    high_contexts = []
+    rest_contexts = []
     try:
-        high_pages = [bro.new_page() for _ in high]
+        high_contexts = [bro.new_context() for _ in high]
+        high_pages = [ctx.new_page() for ctx in high_contexts]
         with ThreadPoolExecutor(max_workers=min(max(len(high), 1), 3)) as pool:
             futures = {pool.submit(run, s, p): s for s, p in zip(high, high_pages)}
             for future in as_completed(futures):
@@ -36,12 +39,15 @@ def execute(spec: str, headless: bool = True) -> TestReport:
         else:
             if rest:
                 print(f"\n[Orchestrator] Running {len(rest)} remaining scenario(s)...")
-                rest_pages = [bro.new_page() for _ in rest]
+                rest_contexts = [bro.new_context() for _ in rest]
+                rest_pages = [ctx.new_page() for ctx in rest_contexts]
                 with ThreadPoolExecutor(max_workers=min(len(rest), 3)) as pool:
                     futures = {pool.submit(run, s, p): s for s, p in zip(rest, rest_pages)}
                     for future in as_completed(futures):
                         results.append(future.result())
     finally:
+        for ctx in high_contexts + rest_contexts:
+            ctx.close()
         bro.stop()
 
     failed_results = [r for r in results if not r.passed]

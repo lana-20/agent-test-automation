@@ -24,13 +24,16 @@ def main(headless: bool = True) -> None:
 
     bro = vibium_browser.start(headless=headless)
     try:
-        pages = [bro.new_page() for _ in scenarios]
+        contexts = [bro.new_context() for _ in scenarios]
+        pages = [ctx.new_page() for ctx in contexts]
         results = []
         with ThreadPoolExecutor(max_workers=min(len(scenarios), 3)) as pool:
             futures = {pool.submit(run_scenario, s, p): s for s, p in zip(scenarios, pages)}
             for future in as_completed(futures):
                 results.append(future.result())
     finally:
+        for ctx in contexts:
+            ctx.close()
         bro.stop()
 
     results.sort(key=lambda r: r.scenario_id)
