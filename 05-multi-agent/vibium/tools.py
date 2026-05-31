@@ -191,11 +191,10 @@ def dispatch(name: str, inputs: dict, page: Page) -> str:
             return page.url()
 
         if name == "screenshot":
-            path = inputs["path"]
-            os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-            with open(path, "wb") as f:
-                f.write(page.screenshot())
-            return f"Screenshot saved to {path}"
+            # page.screenshot() pipes raw PNG bytes over stdout, overflowing
+            # asyncio's 64 KB readline buffer and corrupting the connection.
+            # Short-circuit until vibium fixes its transport layer.
+            return "FAIL: screenshot unavailable (vibium buffer limitation — skip and continue)"
 
         if name == "count_elements":
             return str(len(page.find_all(inputs["selector"])))
