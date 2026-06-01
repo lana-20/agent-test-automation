@@ -13,14 +13,26 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
   },
   {
     name: "click",
-    description: "Click an element by ARIA role and visible text.",
+    description: "Click an element. Use selector (CSS) for reliability, or role+text as ARIA locator.",
     input_schema: {
       type: "object",
       properties: {
+        selector: { type: "string", description: "CSS selector (preferred)" },
         role: { type: "string" },
         text: { type: "string" },
       },
-      required: ["role", "text"],
+    },
+  },
+  {
+    name: "hover",
+    description: "Hover over an element to reveal hidden controls (e.g. delete buttons). Use selector (CSS) or role+text.",
+    input_schema: {
+      type: "object",
+      properties: {
+        selector: { type: "string", description: "CSS selector (preferred)" },
+        role: { type: "string" },
+        text: { type: "string" },
+      },
     },
   },
   {
@@ -36,39 +48,51 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
     },
   },
   {
-    name: "assert_visible",
-    description: "Assert that an element with given role and text is visible.",
+    name: "press",
+    description: "Press a keyboard key on the focused element or a specific selector. Common keys: Enter, Tab, Escape.",
     input_schema: {
       type: "object",
       properties: {
+        key: { type: "string", description: "e.g. 'Enter', 'Tab', 'Escape'" },
+        selector: { type: "string", description: "CSS selector to focus first (optional)" },
+      },
+      required: ["key"],
+    },
+  },
+  {
+    name: "assert_visible",
+    description: "Assert an element is visible. Use selector (CSS) for reliability, or role+text as ARIA locator.",
+    input_schema: {
+      type: "object",
+      properties: {
+        selector: { type: "string", description: "CSS selector (preferred)" },
         role: { type: "string" },
         text: { type: "string" },
       },
-      required: ["role", "text"],
     },
   },
   {
     name: "assert_not_visible",
-    description: "Assert that an element with given role and text is NOT visible.",
+    description: "Assert an element is NOT visible. Use selector (CSS) or role+text.",
     input_schema: {
       type: "object",
       properties: {
+        selector: { type: "string", description: "CSS selector (preferred)" },
         role: { type: "string" },
         text: { type: "string" },
       },
-      required: ["role", "text"],
     },
   },
   {
     name: "get_text",
-    description: "Return the inner text of an element by role and text.",
+    description: "Return the inner text of an element. Prefer selector (CSS); role+text as alternative.",
     input_schema: {
       type: "object",
       properties: {
+        selector: { type: "string", description: "CSS selector (preferred)" },
         role: { type: "string" },
         text: { type: "string" },
       },
-      required: ["role", "text"],
     },
   },
   {
@@ -117,8 +141,29 @@ export async function dispatch(
   }
 
   if (name === "click") {
-    await page.getByRole(inputs.role as AriaRole, { name: inputs.text as string }).click();
-    return `Clicked ${inputs.role} '${inputs.text}'`;
+    const sel = inputs.selector as string | undefined;
+    const loc = sel
+      ? page.locator(sel)
+      : page.getByRole(inputs.role as AriaRole, { name: inputs.text as string });
+    try {
+      await loc.first().click({ timeout: 5000 });
+      return `Clicked selector=${sel} role=${inputs.role} text=${inputs.text}`;
+    } catch {
+      return `TIMEOUT: element not found or not clickable — selector=${sel} role=${inputs.role} text=${inputs.text}`;
+    }
+  }
+
+  if (name === "hover") {
+    const sel = inputs.selector as string | undefined;
+    const loc = sel
+      ? page.locator(sel)
+      : page.getByRole(inputs.role as AriaRole, { name: inputs.text as string });
+    try {
+      await loc.first().hover({ timeout: 5000 });
+      return `Hovered selector=${sel} role=${inputs.role} text=${inputs.text}`;
+    } catch {
+      return `TIMEOUT: element not found or not visible — selector=${sel} role=${inputs.role} text=${inputs.text}`;
+    }
   }
 
   if (name === "fill") {
@@ -130,28 +175,53 @@ export async function dispatch(
     return `Filled '${label}' with '${value}'`;
   }
 
+  if (name === "press") {
+    const key = inputs.key as string;
+    const sel = inputs.selector as string | undefined;
+    if (sel) {
+      await page.locator(sel).press(key);
+    } else {
+      await page.keyboard.press(key);
+    }
+    return `Pressed: ${key}`;
+  }
+
   if (name === "assert_visible") {
-    const loc = page.getByRole(inputs.role as AriaRole, { name: inputs.text as string });
+    const sel = inputs.selector as string | undefined;
+    const loc = sel
+      ? page.locator(sel)
+      : page.getByRole(inputs.role as AriaRole, { name: inputs.text as string });
     try {
-      await loc.waitFor({ state: "visible", timeout: 5000 });
-      return `VISIBLE: ${inputs.role} '${inputs.text}'`;
+      await loc.first().waitFor({ state: "visible", timeout: 5000 });
+      return `VISIBLE: selector=${sel} role=${inputs.role} text=${inputs.text}`;
     } catch {
-      return `FAIL: ${inputs.role} '${inputs.text}' not visible`;
+      return `FAIL: not visible — selector=${sel} role=${inputs.role} text=${inputs.text}`;
     }
   }
 
   if (name === "assert_not_visible") {
-    const loc = page.getByRole(inputs.role as AriaRole, { name: inputs.text as string });
+    const sel = inputs.selector as string | undefined;
+    const loc = sel
+      ? page.locator(sel)
+      : page.getByRole(inputs.role as AriaRole, { name: inputs.text as string });
     try {
-      await loc.waitFor({ state: "hidden", timeout: 3000 });
-      return `HIDDEN: ${inputs.role} '${inputs.text}'`;
+      await loc.first().waitFor({ state: "hidden", timeout: 3000 });
+      return `HIDDEN: selector=${sel} role=${inputs.role} text=${inputs.text}`;
     } catch {
-      return `FAIL: ${inputs.role} '${inputs.text}' is still visible`;
+      return `FAIL: still visible — selector=${sel} role=${inputs.role} text=${inputs.text}`;
     }
   }
 
   if (name === "get_text") {
-    return await page.getByRole(inputs.role as AriaRole, { name: inputs.text as string }).innerText();
+    const sel = inputs.selector as string | undefined;
+    const loc = sel
+      ? page.locator(sel)
+      : page.getByRole(inputs.role as AriaRole, { name: inputs.text as string });
+    try {
+      return await loc.first().innerText({ timeout: 5000 });
+    } catch {
+      return `TIMEOUT: element not found — selector=${sel} role=${inputs.role} text=${inputs.text}`;
+    }
   }
 
   if (name === "get_title") {

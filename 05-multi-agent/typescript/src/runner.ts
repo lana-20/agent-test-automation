@@ -7,7 +7,7 @@ const SYSTEM = `You are a senior test automation engineer executing browser-base
 
 Rules:
 - Work step by step. After each action, verify the result before proceeding.
-- Prefer locating elements by ARIA role + visible text.
+- Prefer locating elements by CSS selector. Use role+text as fallback when no stable selector exists.
 - When an assertion fails, stop and report FAIL with the exact reason.
 - At the end, output a concise report starting with PASS or FAIL, followed by one bullet per step.`;
 
