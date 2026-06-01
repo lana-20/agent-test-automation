@@ -142,7 +142,7 @@ TOOL_DEFINITIONS = [
     },
     {
         "name": "click",
-        "description": "Click an element. Prefer role+text over selector.",
+        "description": "Click an element. Prefer CSS selector. Use role+text as fallback.",
         "input_schema": {
             "type": "object",
             "properties": {

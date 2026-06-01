@@ -127,14 +127,26 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
   },
   {
     name: "click",
-    description: "Click an element. Prefer role+text over selector.",
+    description: "Click an element. Prefer CSS selector. Use role+text as fallback.",
     input_schema: {
       type: "object",
       properties: {
         role: { type: "string" },
         text: { type: "string" },
-        selector: { type: "string", description: "CSS selector — use as fallback only" },
+        selector: { type: "string", description: "CSS selector (preferred)" },
       },
+    },
+  },
+  {
+    name: "press",
+    description: "Press a keyboard key. Use selector to focus a specific element first, or omit to press on the focused element. Common keys: Enter, Tab, Escape.",
+    input_schema: {
+      type: "object",
+      properties: {
+        key: { type: "string", description: "e.g. 'Enter', 'Tab', 'Escape'" },
+        selector: { type: "string", description: "CSS selector to focus before pressing (optional)" },
+      },
+      required: ["key"],
     },
   },
   {
@@ -233,6 +245,16 @@ export async function dispatch(
         return getPageTitle(page);
       case "get_current_url":
         return getCurrentUrl(page);
+      case "press": {
+        const key = inputs.key as string;
+        const sel = inputs.selector as string | undefined;
+        if (sel) {
+          await page.locator(sel).press(key);
+        } else {
+          await page.keyboard.press(key);
+        }
+        return `Pressed: ${key}`;
+      }
       case "screenshot":
         return screenshot(page, inputs.filename as string);
       default:

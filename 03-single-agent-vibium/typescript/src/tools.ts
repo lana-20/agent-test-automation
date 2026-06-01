@@ -138,14 +138,25 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
   },
   {
     name: "click",
-    description: "Click an element. Prefer role+text over selector.",
+    description: "Click an element. Prefer CSS selector. Use role+text as fallback.",
     input_schema: {
       type: "object",
       properties: {
         role: { type: "string" },
         text: { type: "string" },
-        selector: { type: "string", description: "CSS selector — use as fallback only" },
+        selector: { type: "string", description: "CSS selector (preferred)" },
       },
+    },
+  },
+  {
+    name: "press",
+    description: "Press a keyboard key. Common keys: Enter, Tab, Escape.",
+    input_schema: {
+      type: "object",
+      properties: {
+        key: { type: "string", description: "e.g. 'Enter', 'Tab', 'Escape'" },
+      },
+      required: ["key"],
     },
   },
   {
@@ -235,6 +246,10 @@ export async function dispatch(
       case "assert_not_visible": return assertNotVisible(page, inputs.text as string, inputs.selector as string);
       case "get_page_title":  return getPageTitle(page);
       case "get_current_url": return getCurrentUrl(page);
+      case "press": {
+        await page.keyboard.press(inputs.key as string);
+        return `Pressed: ${inputs.key}`;
+      }
       case "screenshot":      return screenshot(page, inputs.filename as string);
       default:                return `Unknown tool: ${name}`;
     }

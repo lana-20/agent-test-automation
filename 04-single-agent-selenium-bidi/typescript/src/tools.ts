@@ -1,4 +1,4 @@
-import { By, WebDriver, until, WebElement } from "selenium-webdriver";
+import { By, Key, WebDriver, until, WebElement } from "selenium-webdriver";
 import * as fs from "fs";
 import * as path from "path";
 import Anthropic from "@anthropic-ai/sdk";
@@ -210,14 +210,26 @@ export const TOOL_DEFINITIONS: Anthropic.Tool[] = [
   },
   {
     name: "click",
-    description: "Click an element. Prefer role+text over selector.",
+    description: "Click an element. Prefer CSS selector. Use role+text as fallback.",
     input_schema: {
       type: "object",
       properties: {
         role: { type: "string" },
         text: { type: "string" },
-        selector: { type: "string", description: "CSS selector — use as fallback only" },
+        selector: { type: "string", description: "CSS selector (preferred)" },
       },
+    },
+  },
+  {
+    name: "press",
+    description: "Press a keyboard key. Use selector to focus a specific element first. Common keys: Enter, Tab, Escape.",
+    input_schema: {
+      type: "object",
+      properties: {
+        key: { type: "string", description: "e.g. 'Enter', 'Tab', 'Escape'" },
+        selector: { type: "string", description: "CSS selector to focus before pressing (optional)" },
+      },
+      required: ["key"],
     },
   },
   {
@@ -306,6 +318,23 @@ export async function dispatch(name: string, inputs: ToolInput, driver: WebDrive
       case "assert_not_visible": return assertNotVisible(driver, inputs.text as string, inputs.selector as string);
       case "get_page_title":     return getPageTitle(driver);
       case "get_current_url":    return getCurrentUrl(driver);
+      case "press": {
+        const keyName = inputs.key as string;
+        const sel = inputs.selector as string | undefined;
+        const keyMap: Record<string, string> = {
+          Enter: Key.ENTER, Tab: Key.TAB, Escape: Key.ESCAPE,
+          ArrowDown: Key.ARROW_DOWN, ArrowUp: Key.ARROW_UP,
+          Backspace: Key.BACK_SPACE, Space: Key.SPACE,
+        };
+        const k = keyMap[keyName] ?? keyName;
+        if (sel) {
+          const el = await driver.wait(until.elementLocated(By.css(sel)), 5000);
+          await el.sendKeys(k);
+        } else {
+          await driver.actions().sendKeys(k).perform();
+        }
+        return `Pressed: ${keyName}`;
+      }
       case "screenshot":         return screenshot(driver, inputs.filename as string);
       case "get_browser_logs":   return getBrowserLogs(driver);
       case "execute_script":     return executeScript(driver, inputs.expression as string);
